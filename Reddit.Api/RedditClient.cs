@@ -248,7 +248,7 @@ namespace Reddit.Api
                 {
                     List<Exception> exceptions = [];
 
-                    foreach (var error in response.Json.Errors)
+                    foreach (string error in response.Json.Errors)
                     {
                         exceptions.Add(new Exception(error));
                     }
@@ -415,6 +415,45 @@ namespace Reddit.Api
             }
         }
 
+        public async Task<List<ApiPost>> GetPosts(IEnumerable<string> ids)
+        {
+            try
+            {
+                await this.EnsureAuthenticated();
+                await this.ThrottleAsync();
+
+                // Format IDs to include 't3_' prefix if not already present
+                IEnumerable<string> fullnames = ids.Select(id => id.StartsWith("t3_") ? id : $"t3_{id}");
+
+                // Construct comma-separated list of IDs
+                string idList = string.Join(",", fullnames);
+
+                string fullUrl = $"{ApiRoot}/api/info?id={idList}";
+
+                ApiThingCollection response = await _jsonClient.Get<ApiThingCollection>(fullUrl);
+
+                if (response.Children.NotNullAny())
+                {
+                    return response.Children.OfType<ApiPost>().ToList();
+                }
+                else
+                {
+                    return [];
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!await this.DisplayException(ex))
+                {
+                    throw;
+                }
+                else
+                {
+                    return [];
+                }
+            }
+        }
+
         public async Task<List<ApiThing>> GetPosts<T>(ApiEndpointDefinition endpointDefinition, T sort, int pageSize, string? after = null, Models.Region region = Models.Region.GLOBAL) where T : Enum
         {
             //TODO: This makes way more sense as an IEnumerable
@@ -507,7 +546,8 @@ namespace Reddit.Api
             try
             {
                 return (ApiUser)await _jsonClient.Get<ApiThing>(fullUrl);
-            } catch(EntityNotFoundException) 
+            }
+            catch (EntityNotFoundException)
             {
                 return null;
             }

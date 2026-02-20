@@ -25,6 +25,8 @@ namespace Reddit.Api.Interfaces
 
         Task<ApiPost> GetPost(string id);
 
+        Task<List<ApiPost>> GetPosts(IEnumerable<string> ids);
+
         Task<List<ApiThing>> GetPosts<T>(ApiEndpointDefinition endpointDefinition, T sort, int pageSize, string? after = null, Region region = Region.GLOBAL) where T : Enum;
 
         Task<Stream> GetStream(string url);
