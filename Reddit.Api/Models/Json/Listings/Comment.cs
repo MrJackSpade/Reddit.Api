@@ -123,7 +123,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool IsSubmitter { get; set; }
 
         [JsonPropertyName("likes")]
-        public bool? Likes { get; set; }
+        public VoteState Likes { get; set; }
 
         [JsonPropertyName("link_author")]
         public string? LinkAuthor { get; set; }

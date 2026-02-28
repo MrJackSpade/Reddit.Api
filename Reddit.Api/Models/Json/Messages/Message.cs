@@ -1,4 +1,5 @@
 using Reddit.Api.Converters;
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Messages
@@ -53,7 +54,7 @@ namespace Reddit.Api.Models.Json.Messages
         public bool IsNew { get; set; }
 
         [JsonPropertyName("likes")]
-        public bool? Likes { get; set; }
+        public VoteState Likes { get; set; }
 
         [JsonPropertyName("link_title")]
         public string? LinkTitle { get; set; }

@@ -267,7 +267,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool IsVideo { get; set; }
 
         [JsonPropertyName("likes")]
-        public bool? Likes { get; set; }
+        public VoteState Likes { get; set; }
 
         [JsonPropertyName("link_flair_background_color")]
         public string? LinkFlairBackgroundColor { get; set; }
