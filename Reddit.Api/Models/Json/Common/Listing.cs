@@ -8,11 +8,11 @@ namespace Reddit.Api.Models.Json.Common
     /// </summary>
     public class Listing<T>
     {
-        [JsonPropertyName("kind")]
-        public string Kind { get; set; } = "Listing";
-
         [JsonPropertyName("data")]
         public ListingData<T>? Data { get; set; }
+
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; } = "Listing";
     }
 
     /// <summary>
@@ -20,10 +20,10 @@ namespace Reddit.Api.Models.Json.Common
     /// </summary>
     public class Listing
     {
-        [JsonPropertyName("kind")]
-        public string Kind { get; set; } = "Listing";
-
         [JsonPropertyName("data")]
         public ListingData? Data { get; set; }
+
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; } = "Listing";
     }
 }

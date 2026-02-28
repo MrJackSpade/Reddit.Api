@@ -5,30 +5,12 @@ namespace Reddit.Api.Client
     public partial class RedditClient
     {
         /// <summary>
-        /// GET /r/{subreddit}/api/widgets - Get subreddit widgets.
-        /// </summary>
-        public async Task<WidgetsResponse?> GetWidgetsAsync(string subreddit, CancellationToken cancellationToken = default)
-        {
-            await TryAuthenticateAsync(cancellationToken);
-            return await GetAsync<WidgetsResponse>($"/r/{subreddit}/api/widgets", cancellationToken);
-        }
-
-        /// <summary>
         /// POST /r/{subreddit}/api/widget - Create a widget.
         /// </summary>
         public async Task<Widget?> CreateWidgetAsync(string subreddit, Widget widget, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
-            return await PostJsonAsync<Widget>($"/r/{subreddit}/api/widget", widget, cancellationToken);
-        }
-
-        /// <summary>
-        /// PUT /r/{subreddit}/api/widget/{widget_id} - Update a widget.
-        /// </summary>
-        public async Task<Widget?> UpdateWidgetAsync(string subreddit, string widgetId, Widget widget, CancellationToken cancellationToken = default)
-        {
-            await EnsureAuthenticatedAsync(cancellationToken);
-            return await PutJsonAsync<Widget>($"/r/{subreddit}/api/widget/{widgetId}", widget, cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
+            return await this.PostJsonAsync<Widget>($"/r/{subreddit}/api/widget", widget, cancellationToken);
         }
 
         /// <summary>
@@ -36,8 +18,26 @@ namespace Reddit.Api.Client
         /// </summary>
         public async Task<bool> DeleteWidgetAsync(string subreddit, string widgetId, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
-            return await DeleteAsync($"/r/{subreddit}/api/widget/{widgetId}", cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
+            return await this.DeleteAsync($"/r/{subreddit}/api/widget/{widgetId}", cancellationToken);
+        }
+
+        /// <summary>
+        /// GET /r/{subreddit}/api/widgets - Get subreddit widgets.
+        /// </summary>
+        public async Task<WidgetsResponse?> GetWidgetsAsync(string subreddit, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            return await this.GetAsync<WidgetsResponse>($"/r/{subreddit}/api/widgets", cancellationToken);
+        }
+
+        /// <summary>
+        /// PUT /r/{subreddit}/api/widget/{widget_id} - Update a widget.
+        /// </summary>
+        public async Task<Widget?> UpdateWidgetAsync(string subreddit, string widgetId, Widget widget, CancellationToken cancellationToken = default)
+        {
+            await this.EnsureAuthenticatedAsync(cancellationToken);
+            return await this.PutJsonAsync<Widget>($"/r/{subreddit}/api/widget/{widgetId}", widget, cancellationToken);
         }
 
         /// <summary>
@@ -45,10 +45,10 @@ namespace Reddit.Api.Client
         /// </summary>
         public async Task<bool> UpdateWidgetOrderAsync(string subreddit, string section, List<string> widgetIds, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
 
             var body = new { order = widgetIds };
-            var response = await PatchJsonAsync<object>($"/r/{subreddit}/api/widget_order/{section}", body, cancellationToken);
+            object? response = await this.PatchJsonAsync<object>($"/r/{subreddit}/api/widget_order/{section}", body, cancellationToken);
             return response != null;
         }
 
@@ -57,19 +57,19 @@ namespace Reddit.Api.Client
         /// </summary>
         private async Task<T?> PostJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
         {
-            await ThrottleAsync(cancellationToken);
+            await this.ThrottleAsync(cancellationToken);
 
-            var url = $"{BaseUrl}{endpoint}";
-            using var request = new HttpRequestMessage(HttpMethod.Post, url);
-            AddAuthHeader(request);
+            string url = $"{BaseUrl}{endpoint}";
+            using HttpRequestMessage request = new(HttpMethod.Post, url);
+            this.AddAuthHeader(request);
 
-            var json = System.Text.Json.JsonSerializer.Serialize(body, _jsonOptions);
+            string json = System.Text.Json.JsonSerializer.Serialize(body, _jsonOptions);
             request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await response.Content.ReadAsStringAsync(cancellationToken);
             return System.Text.Json.JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
     }

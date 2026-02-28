@@ -16,10 +16,10 @@ namespace Reddit.Api.Models.Json.LinksComments
     /// </summary>
     public class MoreChildrenThing
     {
-        [JsonPropertyName("kind")]
-        public string Kind { get; set; } = string.Empty;
-
         [JsonPropertyName("data")]
         public object? Data { get; set; }
+
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; } = string.Empty;
     }
 }

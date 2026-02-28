@@ -2,25 +2,26 @@ using Reddit.Api.Models.Json.Emoji;
 
 namespace Reddit.Api.Client
 {
+    /// <summary>
+    /// S3 upload lease for emoji.
+    /// </summary>
+    public class EmojiUploadLease
+    {
+        public Dictionary<string, string>? Fields { get; set; }
+
+        public string? S3UploadLease { get; set; }
+    }
+
     public partial class RedditClient
     {
-        /// <summary>
-        /// GET /api/v1/{subreddit}/emojis/all - Get all emojis for a subreddit.
-        /// </summary>
-        public async Task<EmojisResponse?> GetEmojisAsync(string subreddit, CancellationToken cancellationToken = default)
-        {
-            await TryAuthenticateAsync(cancellationToken);
-            return await GetAsync<EmojisResponse>($"/api/v1/{subreddit}/emojis/all", cancellationToken);
-        }
-
         /// <summary>
         /// POST /api/v1/{subreddit}/emoji.json - Add a custom emoji.
         /// </summary>
         public async Task<bool> AddEmojiAsync(string subreddit, AddEmojiRequest request, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
 
-            var formData = new Dictionary<string, string>
+            Dictionary<string, string> formData = new()
             {
                 ["name"] = request.Name,
                 ["s3_key"] = request.S3Key,
@@ -29,7 +30,7 @@ namespace Reddit.Api.Client
                 ["user_flair_allowed"] = request.UserFlairAllowed.ToString().ToLower()
             };
 
-            return await PostFormAsync($"/api/v1/{subreddit}/emoji.json", formData, cancellationToken);
+            return await this.PostFormAsync($"/api/v1/{subreddit}/emoji.json", formData, cancellationToken);
         }
 
         /// <summary>
@@ -37,8 +38,17 @@ namespace Reddit.Api.Client
         /// </summary>
         public async Task<bool> DeleteEmojiAsync(string subreddit, string emojiName, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
-            return await DeleteAsync($"/api/v1/{subreddit}/emoji/{emojiName}", cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
+            return await this.DeleteAsync($"/api/v1/{subreddit}/emoji/{emojiName}", cancellationToken);
+        }
+
+        /// <summary>
+        /// GET /api/v1/{subreddit}/emojis/all - Get all emojis for a subreddit.
+        /// </summary>
+        public async Task<EmojisResponse?> GetEmojisAsync(string subreddit, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            return await this.GetAsync<EmojisResponse>($"/api/v1/{subreddit}/emojis/all", cancellationToken);
         }
 
         /// <summary>
@@ -46,15 +56,15 @@ namespace Reddit.Api.Client
         /// </summary>
         public async Task<EmojiUploadLease?> GetEmojiUploadLeaseAsync(string subreddit, string filepath, string mimetype, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
 
-            var formData = new Dictionary<string, string>
+            Dictionary<string, string> formData = new()
             {
                 ["filepath"] = filepath,
                 ["mimetype"] = mimetype
             };
 
-            return await PostFormAsync<EmojiUploadLease>($"/api/v1/{subreddit}/emoji_asset_upload_s3.json", formData, cancellationToken);
+            return await this.PostFormAsync<EmojiUploadLease>($"/api/v1/{subreddit}/emoji_asset_upload_s3.json", formData, cancellationToken);
         }
 
         /// <summary>
@@ -62,24 +72,15 @@ namespace Reddit.Api.Client
         /// </summary>
         public async Task<bool> SetEmojiCustomSizeAsync(string subreddit, int height, int width, CancellationToken cancellationToken = default)
         {
-            await EnsureAuthenticatedAsync(cancellationToken);
+            await this.EnsureAuthenticatedAsync(cancellationToken);
 
-            var formData = new Dictionary<string, string>
+            Dictionary<string, string> formData = new()
             {
                 ["height"] = height.ToString(),
                 ["width"] = width.ToString()
             };
 
-            return await PostFormAsync($"/api/v1/{subreddit}/emoji_custom_size", formData, cancellationToken);
+            return await this.PostFormAsync($"/api/v1/{subreddit}/emoji_custom_size", formData, cancellationToken);
         }
-    }
-
-    /// <summary>
-    /// S3 upload lease for emoji.
-    /// </summary>
-    public class EmojiUploadLease
-    {
-        public string? S3UploadLease { get; set; }
-        public Dictionary<string, string>? Fields { get; set; }
     }
 }

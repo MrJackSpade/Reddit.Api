@@ -7,6 +7,15 @@ namespace Reddit.Api.Models.Json.Listings
     /// </summary>
     public class More
     {
+        [JsonPropertyName("children")]
+        public List<string> Children { get; set; } = [];
+
+        [JsonPropertyName("count")]
+        public int Count { get; set; }
+
+        [JsonPropertyName("depth")]
+        public int Depth { get; set; }
+
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
 
@@ -15,14 +24,5 @@ namespace Reddit.Api.Models.Json.Listings
 
         [JsonPropertyName("parent_id")]
         public string ParentId { get; set; } = string.Empty;
-
-        [JsonPropertyName("count")]
-        public int Count { get; set; }
-
-        [JsonPropertyName("depth")]
-        public int Depth { get; set; }
-
-        [JsonPropertyName("children")]
-        public List<string> Children { get; set; } = [];
     }
 }

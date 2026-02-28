@@ -3,15 +3,70 @@ using System.Text.Json.Serialization;
 namespace Reddit.Api.Models.Json.Multis
 {
     /// <summary>
-    /// Response from GET /api/multi/{multipath}/description.
+    /// Request to copy a multi.
     /// </summary>
-    public class MultiDescriptionResponse
+    public class MultiCopyRequest
     {
-        [JsonPropertyName("kind")]
-        public string Kind { get; set; } = "LabeledMultiDescription";
+        /// <summary>
+        /// Description for the copy.
+        /// </summary>
+        public string? DescriptionMd { get; set; }
 
-        [JsonPropertyName("data")]
-        public MultiDescription? Data { get; set; }
+        /// <summary>
+        /// Display name for the copy.
+        /// </summary>
+        public string? DisplayName { get; set; }
+
+        /// <summary>
+        /// Source multipath.
+        /// </summary>
+        public string From { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Destination multipath.
+        /// </summary>
+        public string To { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Request to create or update a multi.
+    /// </summary>
+    public class MultiCreateRequest
+    {
+        /// <summary>
+        /// Description in markdown.
+        /// </summary>
+        public string? DescriptionMd { get; set; }
+
+        /// <summary>
+        /// Display name for the multi.
+        /// </summary>
+        public string DisplayName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Icon name.
+        /// </summary>
+        public string? IconName { get; set; }
+
+        /// <summary>
+        /// Key color (hex).
+        /// </summary>
+        public string? KeyColor { get; set; }
+
+        /// <summary>
+        /// List of subreddits to include.
+        /// </summary>
+        public List<MultiSubredditInput>? Subreddits { get; set; }
+
+        /// <summary>
+        /// Visibility: private, public, hidden.
+        /// </summary>
+        public string Visibility { get; set; } = "private";
+
+        /// <summary>
+        /// Weighting scheme: classic or fresh.
+        /// </summary>
+        public string? WeightingScheme { get; set; }
     }
 
     public class MultiDescription
@@ -35,75 +90,20 @@ namespace Reddit.Api.Models.Json.Multis
     }
 
     /// <summary>
-    /// Request to create or update a multi.
+    /// Response from GET /api/multi/{multipath}/description.
     /// </summary>
-    public class MultiCreateRequest
+    public class MultiDescriptionResponse
     {
-        /// <summary>
-        /// Display name for the multi.
-        /// </summary>
-        public string DisplayName { get; set; } = string.Empty;
+        [JsonPropertyName("data")]
+        public MultiDescription? Data { get; set; }
 
-        /// <summary>
-        /// Description in markdown.
-        /// </summary>
-        public string? DescriptionMd { get; set; }
-
-        /// <summary>
-        /// Visibility: private, public, hidden.
-        /// </summary>
-        public string Visibility { get; set; } = "private";
-
-        /// <summary>
-        /// Key color (hex).
-        /// </summary>
-        public string? KeyColor { get; set; }
-
-        /// <summary>
-        /// Icon name.
-        /// </summary>
-        public string? IconName { get; set; }
-
-        /// <summary>
-        /// Weighting scheme: classic or fresh.
-        /// </summary>
-        public string? WeightingScheme { get; set; }
-
-        /// <summary>
-        /// List of subreddits to include.
-        /// </summary>
-        public List<MultiSubredditInput>? Subreddits { get; set; }
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; } = "LabeledMultiDescription";
     }
 
     public class MultiSubredditInput
     {
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// Request to copy a multi.
-    /// </summary>
-    public class MultiCopyRequest
-    {
-        /// <summary>
-        /// Source multipath.
-        /// </summary>
-        public string From { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Destination multipath.
-        /// </summary>
-        public string To { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Display name for the copy.
-        /// </summary>
-        public string? DisplayName { get; set; }
-
-        /// <summary>
-        /// Description for the copy.
-        /// </summary>
-        public string? DescriptionMd { get; set; }
     }
 }

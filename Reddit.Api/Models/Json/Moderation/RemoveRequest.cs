@@ -1,22 +1,6 @@
 namespace Reddit.Api.Models.Json.Moderation
 {
     /// <summary>
-    /// Request parameters for POST /api/remove.
-    /// </summary>
-    public class RemoveRequest
-    {
-        /// <summary>
-        /// Fullname of the thing to remove.
-        /// </summary>
-        public string Id { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Whether this is spam (true) or regular removal (false).
-        /// </summary>
-        public bool Spam { get; set; }
-    }
-
-    /// <summary>
     /// Request parameters for POST /api/approve.
     /// </summary>
     public class ApproveRequest
@@ -36,6 +20,22 @@ namespace Reddit.Api.Models.Json.Moderation
         /// Fullname of the thing to ignore reports for.
         /// </summary>
         public string Id { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Request parameters for POST /api/remove.
+    /// </summary>
+    public class RemoveRequest
+    {
+        /// <summary>
+        /// Fullname of the thing to remove.
+        /// </summary>
+        public string Id { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether this is spam (true) or regular removal (false).
+        /// </summary>
+        public bool Spam { get; set; }
     }
 
     /// <summary>

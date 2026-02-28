@@ -18,11 +18,11 @@ namespace Reddit.Api.Models.Json.Users
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
-        [JsonPropertyName("profile_img")]
-        public string? ProfileImg { get; set; }
-
         [JsonPropertyName("profile_color")]
         public string? ProfileColor { get; set; }
+
+        [JsonPropertyName("profile_img")]
+        public string? ProfileImg { get; set; }
 
         [JsonPropertyName("profile_over_18")]
         public bool? ProfileOver18 { get; set; }

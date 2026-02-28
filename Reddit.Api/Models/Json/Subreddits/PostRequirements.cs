@@ -7,23 +7,11 @@ namespace Reddit.Api.Models.Json.Subreddits
     /// </summary>
     public class PostRequirements
     {
-        [JsonPropertyName("domain_blacklist")]
-        public List<string>? DomainBlacklist { get; set; }
-
-        [JsonPropertyName("domain_whitelist")]
-        public List<string>? DomainWhitelist { get; set; }
-
         [JsonPropertyName("body_blacklisted_strings")]
         public List<string>? BodyBlacklistedStrings { get; set; }
 
         [JsonPropertyName("body_required_strings")]
         public List<string>? BodyRequiredStrings { get; set; }
-
-        [JsonPropertyName("title_blacklisted_strings")]
-        public List<string>? TitleBlacklistedStrings { get; set; }
-
-        [JsonPropertyName("title_required_strings")]
-        public List<string>? TitleRequiredStrings { get; set; }
 
         [JsonPropertyName("body_restriction_policy")]
         public string? BodyRestrictionPolicy { get; set; }
@@ -33,6 +21,12 @@ namespace Reddit.Api.Models.Json.Subreddits
 
         [JsonPropertyName("body_text_min_length")]
         public int? BodyTextMinLength { get; set; }
+
+        [JsonPropertyName("domain_blacklist")]
+        public List<string>? DomainBlacklist { get; set; }
+
+        [JsonPropertyName("domain_whitelist")]
+        public List<string>? DomainWhitelist { get; set; }
 
         [JsonPropertyName("gallery_captions_requirement")]
         public string? GalleryCaptionsRequirement { get; set; }
@@ -61,8 +55,14 @@ namespace Reddit.Api.Models.Json.Subreddits
         [JsonPropertyName("link_restriction_policy")]
         public string? LinkRestrictionPolicy { get; set; }
 
+        [JsonPropertyName("title_blacklisted_strings")]
+        public List<string>? TitleBlacklistedStrings { get; set; }
+
         [JsonPropertyName("title_regexes")]
         public List<string>? TitleRegexes { get; set; }
+
+        [JsonPropertyName("title_required_strings")]
+        public List<string>? TitleRequiredStrings { get; set; }
 
         [JsonPropertyName("title_text_max_length")]
         public int? TitleTextMaxLength { get; set; }

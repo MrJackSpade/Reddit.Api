@@ -6,14 +6,9 @@ namespace Reddit.Api.Models.Json.LinksComments
     public class CommentRequest
     {
         /// <summary>
-        /// Fullname of the parent thing (t1_ for comment, t3_ for link).
+        /// Return RTE JSON format.
         /// </summary>
-        public string ThingId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Raw markdown text of the comment.
-        /// </summary>
-        public string Text { get; set; } = string.Empty;
+        public bool? ReturnRtjson { get; set; }
 
         /// <summary>
         /// The richtext_json (optional).
@@ -21,8 +16,13 @@ namespace Reddit.Api.Models.Json.LinksComments
         public string? RichtextJson { get; set; }
 
         /// <summary>
-        /// Return RTE JSON format.
+        /// Raw markdown text of the comment.
         /// </summary>
-        public bool? ReturnRtjson { get; set; }
+        public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Fullname of the parent thing (t1_ for comment, t3_ for link).
+        /// </summary>
+        public string ThingId { get; set; } = string.Empty;
     }
 }

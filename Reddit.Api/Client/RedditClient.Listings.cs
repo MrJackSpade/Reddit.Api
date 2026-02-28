@@ -9,54 +9,17 @@ namespace Reddit.Api.Client
         /// <inheritdoc />
         public async Task<Listing<Thing<Link>>?> GetBestAsync(ListingParameters? parameters = null, CancellationToken cancellationToken = default)
         {
-            await TryAuthenticateAsync(cancellationToken);
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            return await GetAsync<Listing<Thing<Link>>>($"/best{query}", cancellationToken);
+            await this.TryAuthenticateAsync(cancellationToken);
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            return await this.GetAsync<Listing<Thing<Link>>>($"/best{query}", cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetHotAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
+        public async Task<Listing<Thing<Link>>?> GetByIdAsync(IEnumerable<string> fullnames, CancellationToken cancellationToken = default)
         {
-            await TryAuthenticateAsync(cancellationToken);
-            var endpoint = string.IsNullOrEmpty(subreddit) ? "/hot" : $"/r/{subreddit}/hot";
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            return await GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetNewAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
-        {
-            await TryAuthenticateAsync(cancellationToken);
-            var endpoint = string.IsNullOrEmpty(subreddit) ? "/new" : $"/r/{subreddit}/new";
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            return await GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetTopAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
-        {
-            await TryAuthenticateAsync(cancellationToken);
-            var endpoint = string.IsNullOrEmpty(subreddit) ? "/top" : $"/r/{subreddit}/top";
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            return await GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetControversialAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
-        {
-            await TryAuthenticateAsync(cancellationToken);
-            var endpoint = string.IsNullOrEmpty(subreddit) ? "/controversial" : $"/r/{subreddit}/controversial";
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            return await GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetRisingAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
-        {
-            await TryAuthenticateAsync(cancellationToken);
-            var endpoint = string.IsNullOrEmpty(subreddit) ? "/rising" : $"/r/{subreddit}/rising";
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            return await GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
+            await this.TryAuthenticateAsync(cancellationToken);
+            string names = string.Join(",", fullnames);
+            return await this.GetAsync<Listing<Thing<Link>>>($"/by_id/{names}", cancellationToken);
         }
 
         /// <inheritdoc />
@@ -68,23 +31,34 @@ namespace Reddit.Api.Client
             int? depth = null,
             CancellationToken cancellationToken = default)
         {
-            await TryAuthenticateAsync(cancellationToken);
+            await this.TryAuthenticateAsync(cancellationToken);
 
-            var queryParams = new List<string>();
+            List<string> queryParams = new();
             if (!string.IsNullOrEmpty(commentId))
+            {
                 queryParams.Add($"comment={commentId}");
-            if (!string.IsNullOrEmpty(sort))
-                queryParams.Add($"sort={sort}");
-            if (limit.HasValue)
-                queryParams.Add($"limit={limit.Value}");
-            if (depth.HasValue)
-                queryParams.Add($"depth={depth.Value}");
+            }
 
-            var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
-            var endpoint = $"/comments/{articleId}{query}";
+            if (!string.IsNullOrEmpty(sort))
+            {
+                queryParams.Add($"sort={sort}");
+            }
+
+            if (limit.HasValue)
+            {
+                queryParams.Add($"limit={limit.Value}");
+            }
+
+            if (depth.HasValue)
+            {
+                queryParams.Add($"depth={depth.Value}");
+            }
+
+            string query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+            string endpoint = $"/comments/{articleId}{query}";
 
             // Reddit returns an array of two listings: [post, comments]
-            var result = await GetAsync<JsonElement>(endpoint, cancellationToken);
+            JsonElement result = await this.GetAsync<JsonElement>(endpoint, cancellationToken);
 
             if (result.ValueKind != JsonValueKind.Array)
             {
@@ -94,12 +68,13 @@ namespace Reddit.Api.Client
             Thing<Link>? post = null;
             Listing<Thing<Comment>>? comments = null;
 
-            var elements = result.EnumerateArray().ToList();
+            List<JsonElement> elements = result.EnumerateArray().ToList();
             if (elements.Count >= 1)
             {
-                var postListing = JsonSerializer.Deserialize<Listing<Thing<Link>>>(elements[0].GetRawText(), _jsonOptions);
+                Listing<Thing<Link>>? postListing = JsonSerializer.Deserialize<Listing<Thing<Link>>>(elements[0].GetRawText(), _jsonOptions);
                 post = postListing?.Data?.Children?.FirstOrDefault();
             }
+
             if (elements.Count >= 2)
             {
                 comments = JsonSerializer.Deserialize<Listing<Thing<Comment>>>(elements[1].GetRawText(), _jsonOptions);
@@ -109,18 +84,27 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
+        public async Task<Listing<Thing<Link>>?> GetControversialAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            string endpoint = string.IsNullOrEmpty(subreddit) ? "/controversial" : $"/r/{subreddit}/controversial";
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            return await this.GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
+        }
+
+        /// <inheritdoc />
         public async Task<(Thing<Link>? Post, Listing<Thing<Link>>? Duplicates)> GetDuplicatesAsync(
             string articleId,
             ListingParameters? parameters = null,
             CancellationToken cancellationToken = default)
         {
-            await TryAuthenticateAsync(cancellationToken);
+            await this.TryAuthenticateAsync(cancellationToken);
 
-            var query = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"/duplicates/{articleId}{query}";
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            string endpoint = $"/duplicates/{articleId}{query}";
 
             // Reddit returns an array of two listings: [original post, duplicates]
-            var result = await GetAsync<JsonElement>(endpoint, cancellationToken);
+            JsonElement result = await this.GetAsync<JsonElement>(endpoint, cancellationToken);
 
             if (result.ValueKind != JsonValueKind.Array)
             {
@@ -130,12 +114,13 @@ namespace Reddit.Api.Client
             Thing<Link>? post = null;
             Listing<Thing<Link>>? duplicates = null;
 
-            var elements = result.EnumerateArray().ToList();
+            List<JsonElement> elements = result.EnumerateArray().ToList();
             if (elements.Count >= 1)
             {
-                var postListing = JsonSerializer.Deserialize<Listing<Thing<Link>>>(elements[0].GetRawText(), _jsonOptions);
+                Listing<Thing<Link>>? postListing = JsonSerializer.Deserialize<Listing<Thing<Link>>>(elements[0].GetRawText(), _jsonOptions);
                 post = postListing?.Data?.Children?.FirstOrDefault();
             }
+
             if (elements.Count >= 2)
             {
                 duplicates = JsonSerializer.Deserialize<Listing<Thing<Link>>>(elements[1].GetRawText(), _jsonOptions);
@@ -145,11 +130,39 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetByIdAsync(IEnumerable<string> fullnames, CancellationToken cancellationToken = default)
+        public async Task<Listing<Thing<Link>>?> GetHotAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
         {
-            await TryAuthenticateAsync(cancellationToken);
-            var names = string.Join(",", fullnames);
-            return await GetAsync<Listing<Thing<Link>>>($"/by_id/{names}", cancellationToken);
+            await this.TryAuthenticateAsync(cancellationToken);
+            string endpoint = string.IsNullOrEmpty(subreddit) ? "/hot" : $"/r/{subreddit}/hot";
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            return await this.GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<Listing<Thing<Link>>?> GetNewAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            string endpoint = string.IsNullOrEmpty(subreddit) ? "/new" : $"/r/{subreddit}/new";
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            return await this.GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<Listing<Thing<Link>>?> GetRisingAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            string endpoint = string.IsNullOrEmpty(subreddit) ? "/rising" : $"/r/{subreddit}/rising";
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            return await this.GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<Listing<Thing<Link>>?> GetTopAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            string endpoint = string.IsNullOrEmpty(subreddit) ? "/top" : $"/r/{subreddit}/top";
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            return await this.GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
         }
     }
 }

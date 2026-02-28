@@ -21,10 +21,10 @@ namespace Reddit.Api.Models.Json.Common
         public string? Before { get; set; }
 
         /// <summary>
-        /// Modhash for CSRF protection.
+        /// The list of Things in this listing.
         /// </summary>
-        [JsonPropertyName("modhash")]
-        public string? Modhash { get; set; }
+        [JsonPropertyName("children")]
+        public List<T> Children { get; set; } = [];
 
         /// <summary>
         /// Total distance from the first item (Reddit-specific).
@@ -33,16 +33,16 @@ namespace Reddit.Api.Models.Json.Common
         public int? Dist { get; set; }
 
         /// <summary>
-        /// The list of Things in this listing.
-        /// </summary>
-        [JsonPropertyName("children")]
-        public List<T> Children { get; set; } = [];
-
-        /// <summary>
         /// Geolocation filter applied to the listing.
         /// </summary>
         [JsonPropertyName("geo_filter")]
         public string? GeoFilter { get; set; }
+
+        /// <summary>
+        /// Modhash for CSRF protection.
+        /// </summary>
+        [JsonPropertyName("modhash")]
+        public string? Modhash { get; set; }
     }
 
     /// <summary>
@@ -56,16 +56,16 @@ namespace Reddit.Api.Models.Json.Common
         [JsonPropertyName("before")]
         public string? Before { get; set; }
 
-        [JsonPropertyName("modhash")]
-        public string? Modhash { get; set; }
+        [JsonPropertyName("children")]
+        public List<Thing>? Children { get; set; }
 
         [JsonPropertyName("dist")]
         public int? Dist { get; set; }
 
-        [JsonPropertyName("children")]
-        public List<Thing>? Children { get; set; }
-
         [JsonPropertyName("geo_filter")]
         public string? GeoFilter { get; set; }
+
+        [JsonPropertyName("modhash")]
+        public string? Modhash { get; set; }
     }
 }

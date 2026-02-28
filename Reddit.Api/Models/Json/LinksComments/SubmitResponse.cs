@@ -7,9 +7,6 @@ namespace Reddit.Api.Models.Json.LinksComments
     /// </summary>
     public class SubmitResponseData
     {
-        [JsonPropertyName("url")]
-        public string? Url { get; set; }
-
         [JsonPropertyName("drafts_count")]
         public int? DraftsCount { get; set; }
 
@@ -18,5 +15,8 @@ namespace Reddit.Api.Models.Json.LinksComments
 
         [JsonPropertyName("name")]
         public string? Name { get; set; }
+
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
     }
 }

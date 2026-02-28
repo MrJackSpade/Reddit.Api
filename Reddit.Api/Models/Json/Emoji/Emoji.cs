@@ -3,15 +3,34 @@ using System.Text.Json.Serialization;
 namespace Reddit.Api.Models.Json.Emoji
 {
     /// <summary>
-    /// Response from GET /api/v1/{subreddit}/emojis/all.
+    /// Request to add custom emoji.
     /// </summary>
-    public class EmojisResponse
+    public class AddEmojiRequest
     {
-        [JsonPropertyName("snoomojis")]
-        public Dictionary<string, Emoji>? Snoomojis { get; set; }
+        /// <summary>
+        /// Whether only mods can use in flair.
+        /// </summary>
+        public bool ModFlairOnly { get; set; }
 
-        [JsonPropertyName("subreddit_emojis")]
-        public Dictionary<string, Emoji>? SubredditEmojis { get; set; }
+        /// <summary>
+        /// Emoji name (alphanumeric and underscores only).
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether allowed in post flair.
+        /// </summary>
+        public bool PostFlairAllowed { get; set; } = true;
+
+        /// <summary>
+        /// S3 image key from upload.
+        /// </summary>
+        public string S3Key { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether allowed in user flair.
+        /// </summary>
+        public bool UserFlairAllowed { get; set; } = true;
     }
 
     /// <summary>
@@ -19,9 +38,6 @@ namespace Reddit.Api.Models.Json.Emoji
     /// </summary>
     public class Emoji
     {
-        [JsonPropertyName("url")]
-        public string Url { get; set; } = string.Empty;
-
         [JsonPropertyName("created_by")]
         public string? CreatedBy { get; set; }
 
@@ -31,38 +47,22 @@ namespace Reddit.Api.Models.Json.Emoji
         [JsonPropertyName("post_flair_allowed")]
         public bool PostFlairAllowed { get; set; }
 
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = string.Empty;
+
         [JsonPropertyName("user_flair_allowed")]
         public bool UserFlairAllowed { get; set; }
     }
 
     /// <summary>
-    /// Request to add custom emoji.
+    /// Response from GET /api/v1/{subreddit}/emojis/all.
     /// </summary>
-    public class AddEmojiRequest
+    public class EmojisResponse
     {
-        /// <summary>
-        /// Emoji name (alphanumeric and underscores only).
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("snoomojis")]
+        public Dictionary<string, Emoji>? Snoomojis { get; set; }
 
-        /// <summary>
-        /// S3 image key from upload.
-        /// </summary>
-        public string S3Key { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Whether only mods can use in flair.
-        /// </summary>
-        public bool ModFlairOnly { get; set; }
-
-        /// <summary>
-        /// Whether allowed in post flair.
-        /// </summary>
-        public bool PostFlairAllowed { get; set; } = true;
-
-        /// <summary>
-        /// Whether allowed in user flair.
-        /// </summary>
-        public bool UserFlairAllowed { get; set; } = true;
+        [JsonPropertyName("subreddit_emojis")]
+        public Dictionary<string, Emoji>? SubredditEmojis { get; set; }
     }
 }

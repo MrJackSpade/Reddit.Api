@@ -6,14 +6,9 @@ namespace Reddit.Api.Models.Json.LinksComments
     public class EditUserTextRequest
     {
         /// <summary>
-        /// Fullname of the thing being edited (t1_ or t3_).
+        /// Return RTE JSON format.
         /// </summary>
-        public string ThingId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// New raw markdown text.
-        /// </summary>
-        public string Text { get; set; } = string.Empty;
+        public bool? ReturnRtjson { get; set; }
 
         /// <summary>
         /// The richtext_json (optional for RTE).
@@ -21,8 +16,13 @@ namespace Reddit.Api.Models.Json.LinksComments
         public string? RichtextJson { get; set; }
 
         /// <summary>
-        /// Return RTE JSON format.
+        /// New raw markdown text.
         /// </summary>
-        public bool? ReturnRtjson { get; set; }
+        public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Fullname of the thing being edited (t1_ or t3_).
+        /// </summary>
+        public string ThingId { get; set; } = string.Empty;
     }
 }

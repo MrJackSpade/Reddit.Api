@@ -6,31 +6,6 @@ namespace Reddit.Api.Models.Json.LinksComments
     public class ReportRequest
     {
         /// <summary>
-        /// Fullname of the thing to report.
-        /// </summary>
-        public string ThingId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The reason for the report (max 100 chars).
-        /// </summary>
-        public string? Reason { get; set; }
-
-        /// <summary>
-        /// Additional information about the report.
-        /// </summary>
-        public string? OtherReason { get; set; }
-
-        /// <summary>
-        /// Site rule name if using sitewide reporting.
-        /// </summary>
-        public string? SiteReason { get; set; }
-
-        /// <summary>
-        /// Rule reason (for subreddit rules).
-        /// </summary>
-        public string? RuleReason { get; set; }
-
-        /// <summary>
         /// Custom report text.
         /// </summary>
         public string? CustomText { get; set; }
@@ -46,9 +21,34 @@ namespace Reddit.Api.Models.Json.LinksComments
         public bool? ModmailConvId { get; set; }
 
         /// <summary>
+        /// Additional information about the report.
+        /// </summary>
+        public string? OtherReason { get; set; }
+
+        /// <summary>
+        /// The reason for the report (max 100 chars).
+        /// </summary>
+        public string? Reason { get; set; }
+
+        /// <summary>
+        /// Rule reason (for subreddit rules).
+        /// </summary>
+        public string? RuleReason { get; set; }
+
+        /// <summary>
+        /// Site rule name if using sitewide reporting.
+        /// </summary>
+        public string? SiteReason { get; set; }
+
+        /// <summary>
         /// Whether to use strict JSON mode.
         /// </summary>
         public bool? StrictJsonParsing { get; set; }
+
+        /// <summary>
+        /// Fullname of the thing to report.
+        /// </summary>
+        public string ThingId { get; set; } = string.Empty;
 
         /// <summary>
         /// Whether to use user-based rules.

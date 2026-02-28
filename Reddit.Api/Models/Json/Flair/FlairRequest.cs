@@ -1,44 +1,13 @@
 namespace Reddit.Api.Models.Json.Flair
 {
     /// <summary>
-    /// Request parameters for POST /api/selectflair.
+    /// Flair type values.
     /// </summary>
-    public class SelectFlairRequest
+    public static class FlairType
     {
-        /// <summary>
-        /// Fullname of the link if setting link flair.
-        /// </summary>
-        public string? Link { get; set; }
+        public const string Link = "LINK_FLAIR";
 
-        /// <summary>
-        /// Username if setting user flair.
-        /// </summary>
-        public string? Name { get; set; }
-
-        /// <summary>
-        /// Flair template ID.
-        /// </summary>
-        public string? FlairTemplateId { get; set; }
-
-        /// <summary>
-        /// Custom flair text.
-        /// </summary>
-        public string? Text { get; set; }
-
-        /// <summary>
-        /// CSS class for flair.
-        /// </summary>
-        public string? CssClass { get; set; }
-
-        /// <summary>
-        /// Text color: light or dark.
-        /// </summary>
-        public string? TextColor { get; set; }
-
-        /// <summary>
-        /// Background color (hex).
-        /// </summary>
-        public string? BackgroundColor { get; set; }
+        public const string User = "USER_FLAIR";
     }
 
     /// <summary>
@@ -46,6 +15,21 @@ namespace Reddit.Api.Models.Json.Flair
     /// </summary>
     public class FlairTemplateRequest
     {
+        /// <summary>
+        /// Allowable content: all, emoji, text.
+        /// </summary>
+        public string? AllowableContent { get; set; }
+
+        /// <summary>
+        /// Background color (hex).
+        /// </summary>
+        public string? BackgroundColor { get; set; }
+
+        /// <summary>
+        /// CSS class.
+        /// </summary>
+        public string? CssClass { get; set; }
+
         /// <summary>
         /// Flair template ID to edit (omit for new).
         /// </summary>
@@ -57,29 +41,9 @@ namespace Reddit.Api.Models.Json.Flair
         public string FlairType { get; set; } = "LINK_FLAIR";
 
         /// <summary>
-        /// Flair text.
+        /// Maximum number of emojis.
         /// </summary>
-        public string Text { get; set; } = string.Empty;
-
-        /// <summary>
-        /// CSS class.
-        /// </summary>
-        public string? CssClass { get; set; }
-
-        /// <summary>
-        /// Text color: light or dark.
-        /// </summary>
-        public string? TextColor { get; set; }
-
-        /// <summary>
-        /// Background color (hex).
-        /// </summary>
-        public string? BackgroundColor { get; set; }
-
-        /// <summary>
-        /// Whether text is editable by users.
-        /// </summary>
-        public bool? TextEditable { get; set; }
+        public int? MaxEmojis { get; set; }
 
         /// <summary>
         /// Whether only mods can use this flair.
@@ -87,27 +51,64 @@ namespace Reddit.Api.Models.Json.Flair
         public bool? ModOnly { get; set; }
 
         /// <summary>
-        /// Allowable content: all, emoji, text.
-        /// </summary>
-        public string? AllowableContent { get; set; }
-
-        /// <summary>
-        /// Maximum number of emojis.
-        /// </summary>
-        public int? MaxEmojis { get; set; }
-
-        /// <summary>
         /// Override CSS with new colors.
         /// </summary>
         public bool? OverrideCss { get; set; }
+
+        /// <summary>
+        /// Flair text.
+        /// </summary>
+        public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Text color: light or dark.
+        /// </summary>
+        public string? TextColor { get; set; }
+
+        /// <summary>
+        /// Whether text is editable by users.
+        /// </summary>
+        public bool? TextEditable { get; set; }
     }
 
     /// <summary>
-    /// Flair type values.
+    /// Request parameters for POST /api/selectflair.
     /// </summary>
-    public static class FlairType
+    public class SelectFlairRequest
     {
-        public const string User = "USER_FLAIR";
-        public const string Link = "LINK_FLAIR";
+        /// <summary>
+        /// Background color (hex).
+        /// </summary>
+        public string? BackgroundColor { get; set; }
+
+        /// <summary>
+        /// CSS class for flair.
+        /// </summary>
+        public string? CssClass { get; set; }
+
+        /// <summary>
+        /// Flair template ID.
+        /// </summary>
+        public string? FlairTemplateId { get; set; }
+
+        /// <summary>
+        /// Fullname of the link if setting link flair.
+        /// </summary>
+        public string? Link { get; set; }
+
+        /// <summary>
+        /// Username if setting user flair.
+        /// </summary>
+        public string? Name { get; set; }
+
+        /// <summary>
+        /// Custom flair text.
+        /// </summary>
+        public string? Text { get; set; }
+
+        /// <summary>
+        /// Text color: light or dark.
+        /// </summary>
+        public string? TextColor { get; set; }
     }
 }

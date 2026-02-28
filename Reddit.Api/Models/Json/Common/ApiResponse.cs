@@ -13,24 +13,24 @@ namespace Reddit.Api.Models.Json.Common
     }
 
     /// <summary>
-    /// The JSON envelope inside an API response.
-    /// </summary>
-    public class ApiResponseJson<T>
-    {
-        [JsonPropertyName("errors")]
-        public List<List<string>> Errors { get; set; } = [];
-
-        [JsonPropertyName("data")]
-        public T? Data { get; set; }
-    }
-
-    /// <summary>
     /// Non-data API response (for operations that don't return data).
     /// </summary>
     public class ApiResponse
     {
         [JsonPropertyName("json")]
         public ApiResponseJsonNoData? Json { get; set; }
+    }
+
+    /// <summary>
+    /// The JSON envelope inside an API response.
+    /// </summary>
+    public class ApiResponseJson<T>
+    {
+        [JsonPropertyName("data")]
+        public T? Data { get; set; }
+
+        [JsonPropertyName("errors")]
+        public List<List<string>> Errors { get; set; } = [];
     }
 
     /// <summary>

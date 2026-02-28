@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Reddit.Api.Models.Json.LinksComments
 {
     /// <summary>

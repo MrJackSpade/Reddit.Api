@@ -65,11 +65,11 @@ namespace Reddit.Api.Models.Json.Account
         [JsonPropertyName("email_upvote_post")]
         public bool? EmailUpvotePost { get; set; }
 
-        [JsonPropertyName("email_user_new_follower")]
-        public bool? EmailUserNewFollower { get; set; }
-
         [JsonPropertyName("email_username_mention")]
         public bool? EmailUsernameMention { get; set; }
+
+        [JsonPropertyName("email_user_new_follower")]
+        public bool? EmailUserNewFollower { get; set; }
 
         [JsonPropertyName("enable_default_themes")]
         public bool? EnableDefaultThemes { get; set; }
