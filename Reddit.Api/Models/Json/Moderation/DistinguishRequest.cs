@@ -1,28 +1,16 @@
+using Reddit.Api.Models.Enums;
+
 namespace Reddit.Api.Models.Json.Moderation
 {
-    /// <summary>
-    /// Distinguish type values.
-    /// </summary>
-    public static class DistinguishHow
-    {
-        public const string Admin = "admin";
-
-        public const string No = "no";
-
-        public const string Special = "special";
-
-        public const string Yes = "yes";
-    }
-
     /// <summary>
     /// Request parameters for POST /api/distinguish.
     /// </summary>
     public class DistinguishRequest
     {
         /// <summary>
-        /// How to distinguish: "yes", "no", "admin", "special".
+        /// How to distinguish: yes, no, admin, special.
         /// </summary>
-        public string How { get; set; } = "yes";
+        public DistinguishHow How { get; set; } = DistinguishHow.Yes;
 
         /// <summary>
         /// Fullname of the thing to distinguish.

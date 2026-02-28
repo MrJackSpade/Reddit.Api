@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.LinksComments;
 using Reddit.Api.Models.Json.Listings;
 

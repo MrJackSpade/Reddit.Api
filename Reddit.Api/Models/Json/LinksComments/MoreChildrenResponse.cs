@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Reddit.Api.Models.Enums;
 
 namespace Reddit.Api.Models.Json.LinksComments
 {
@@ -20,6 +21,6 @@ namespace Reddit.Api.Models.Json.LinksComments
         public object? Data { get; set; }
 
         [JsonPropertyName("kind")]
-        public string Kind { get; set; } = string.Empty;
+        public ThingKind Kind { get; set; }
     }
 }

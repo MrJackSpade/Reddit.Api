@@ -1,33 +1,7 @@
+using Reddit.Api.Models.Enums;
+
 namespace Reddit.Api.Models.Json.Search
 {
-    /// <summary>
-    /// Search sort options.
-    /// </summary>
-    public static class SearchSort
-    {
-        public const string Comments = "comments";
-
-        public const string Hot = "hot";
-
-        public const string New = "new";
-
-        public const string Relevance = "relevance";
-
-        public const string Top = "top";
-    }
-
-    /// <summary>
-    /// Search type options.
-    /// </summary>
-    public static class SearchType
-    {
-        public const string Link = "link";
-
-        public const string Subreddit = "sr";
-
-        public const string User = "user";
-    }
-
     /// <summary>
     /// Parameters for GET /search.
     /// </summary>
@@ -71,7 +45,7 @@ namespace Reddit.Api.Models.Json.Search
         /// <summary>
         /// Sort order: relevance, hot, top, new, comments.
         /// </summary>
-        public string? Sort { get; set; }
+        public SearchSort? Sort { get; set; }
 
         /// <summary>
         /// Restrict search to subreddit (without r/ prefix).
@@ -86,7 +60,7 @@ namespace Reddit.Api.Models.Json.Search
         /// <summary>
         /// Search type: sr (subreddits), link, user.
         /// </summary>
-        public string? Type { get; set; }
+        public SearchType? Type { get; set; }
 
         /// <summary>
         /// Convert parameters to query string.
@@ -98,9 +72,9 @@ namespace Reddit.Api.Models.Json.Search
                 $"q={Uri.EscapeDataString(Query)}"
             };
 
-            if (!string.IsNullOrEmpty(Sort))
+            if (Sort.HasValue)
             {
-                parts.Add($"sort={Uri.EscapeDataString(Sort)}");
+                parts.Add($"sort={Uri.EscapeDataString(Sort.Value.ToJsonString())}");
             }
 
             if (!string.IsNullOrEmpty(Time))
@@ -108,9 +82,9 @@ namespace Reddit.Api.Models.Json.Search
                 parts.Add($"t={Uri.EscapeDataString(Time)}");
             }
 
-            if (!string.IsNullOrEmpty(Type))
+            if (Type.HasValue)
             {
-                parts.Add($"type={Uri.EscapeDataString(Type)}");
+                parts.Add($"type={Uri.EscapeDataString(Type.Value.ToJsonString())}");
             }
 
             if (!string.IsNullOrEmpty(After))

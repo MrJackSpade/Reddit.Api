@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Json\Converters\" />
-    <Folder Include="Models\Requests\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
 
 </Project>

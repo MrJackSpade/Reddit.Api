@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Listings;
 
 namespace Reddit.Api.Tests
@@ -16,7 +17,7 @@ namespace Reddit.Api.Tests
             var user = await Client!.GetUserAboutAsync(username);
 
             Assert.IsNotNull(user);
-            Assert.AreEqual("t2", user.Kind);
+            Assert.AreEqual(ThingKind.Account, user.Kind);
             Assert.IsNotNull(user.Data);
             Assert.AreEqual(username, user.Data.Name, true);
         }

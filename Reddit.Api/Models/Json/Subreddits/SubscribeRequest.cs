@@ -1,24 +1,16 @@
+using Reddit.Api.Models.Enums;
+
 namespace Reddit.Api.Models.Json.Subreddits
 {
-    /// <summary>
-    /// Subscribe action types.
-    /// </summary>
-    public static class SubscribeAction
-    {
-        public const string Subscribe = "sub";
-
-        public const string Unsubscribe = "unsub";
-    }
-
     /// <summary>
     /// Request parameters for POST /api/subscribe.
     /// </summary>
     public class SubscribeRequest
     {
         /// <summary>
-        /// Action to take: "sub" or "unsub".
+        /// Action to take: sub or unsub.
         /// </summary>
-        public string Action { get; set; } = "sub";
+        public SubscribeAction Action { get; set; } = SubscribeAction.Subscribe;
 
         /// <summary>
         /// Skip the initial frontpage for new users.

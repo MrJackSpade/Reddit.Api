@@ -1,3 +1,5 @@
+using Reddit.Api.Models.Enums;
+
 namespace Reddit.Api.Tests
 {
     [TestClass]
@@ -61,7 +63,7 @@ namespace Reddit.Api.Tests
             {
                 Subreddit = TestSubreddit,
                 Title = $"Mod Test Post {DateTime.UtcNow:O}",
-                Kind = Reddit.Api.Models.Json.LinksComments.SubmitKind.Self,
+                Kind = SubmitKind.Self,
                 Text = "This is a test post for moderation testing.",
                 SendReplies = false
             };
@@ -97,7 +99,7 @@ namespace Reddit.Api.Tests
             {
                 Subreddit = TestSubreddit,
                 Title = $"Distinguish Test Post {DateTime.UtcNow:O}",
-                Kind = Reddit.Api.Models.Json.LinksComments.SubmitKind.Self,
+                Kind = SubmitKind.Self,
                 Text = "This is a test post for distinguish testing.",
                 SendReplies = false
             };
@@ -113,11 +115,11 @@ namespace Reddit.Api.Tests
                 Assert.IsNotNull(comment.Data);
 
                 // Distinguish the comment
-                var distinguished = await Client!.DistinguishAsync(comment.Data.Name, "yes");
+                var distinguished = await Client!.DistinguishAsync(comment.Data.Name, DistinguishHow.Yes);
                 Assert.IsNotNull(distinguished);
 
                 // Undistinguish
-                var undistinguished = await Client!.DistinguishAsync(comment.Data.Name, "no");
+                var undistinguished = await Client!.DistinguishAsync(comment.Data.Name, DistinguishHow.No);
                 Assert.IsNotNull(undistinguished);
             }
             finally

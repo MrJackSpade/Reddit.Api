@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Account;
 using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.Flair;
@@ -390,7 +391,7 @@ namespace Reddit.Api.Client
         /// <summary>
         /// POST /api/distinguish - Distinguish a thing.
         /// </summary>
-        Task<Thing<Comment>?> DistinguishAsync(string fullname, string how = "yes", bool? sticky = null, CancellationToken cancellationToken = default);
+        Task<Thing<Comment>?> DistinguishAsync(string fullname, DistinguishHow how = DistinguishHow.Yes, bool? sticky = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// GET /r/{subreddit}/about/edited - Get edited items.

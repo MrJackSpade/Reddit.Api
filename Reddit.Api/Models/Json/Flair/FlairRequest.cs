@@ -1,15 +1,7 @@
+using Reddit.Api.Models.Enums;
+
 namespace Reddit.Api.Models.Json.Flair
 {
-    /// <summary>
-    /// Flair type values.
-    /// </summary>
-    public static class FlairType
-    {
-        public const string Link = "LINK_FLAIR";
-
-        public const string User = "USER_FLAIR";
-    }
-
     /// <summary>
     /// Request parameters for POST /api/flairtemplate_v2.
     /// </summary>
@@ -38,7 +30,7 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Flair type: USER_FLAIR or LINK_FLAIR.
         /// </summary>
-        public string FlairType { get; set; } = "LINK_FLAIR";
+        public FlairType FlairType { get; set; } = FlairType.Link;
 
         /// <summary>
         /// Maximum number of emojis.

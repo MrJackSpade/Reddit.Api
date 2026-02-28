@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.LinksComments;
 using Reddit.Api.Models.Json.Listings;
@@ -305,7 +306,7 @@ namespace Reddit.Api.Client
                 ["api_type"] = "json",
                 ["sr"] = request.Subreddit,
                 ["title"] = request.Title,
-                ["kind"] = request.Kind,
+                ["kind"] = request.Kind.ToJsonString(),
                 ["sendreplies"] = request.SendReplies.ToString().ToLower()
             };
 

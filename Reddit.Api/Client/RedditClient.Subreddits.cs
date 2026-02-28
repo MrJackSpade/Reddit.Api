@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.Listings;
 using Reddit.Api.Models.Json.Subreddits;
@@ -91,7 +92,7 @@ namespace Reddit.Api.Client
 
             Dictionary<string, string> formData = new()
             {
-                ["action"] = subscribe ? SubscribeAction.Subscribe : SubscribeAction.Unsubscribe,
+                ["action"] = subscribe ? SubscribeAction.Subscribe.ToJsonString() : SubscribeAction.Unsubscribe.ToJsonString(),
                 ["sr_name"] = subreddit
             };
 

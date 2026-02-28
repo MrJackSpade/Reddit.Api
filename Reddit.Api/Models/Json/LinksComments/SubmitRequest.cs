@@ -1,25 +1,7 @@
+using Reddit.Api.Models.Enums;
+
 namespace Reddit.Api.Models.Json.LinksComments
 {
-    /// <summary>
-    /// Types of Reddit submissions.
-    /// </summary>
-    public static class SubmitKind
-    {
-        public const string Crosspost = "crosspost";
-
-        public const string Image = "image";
-
-        public const string Link = "link";
-
-        public const string Poll = "poll";
-
-        public const string Self = "self";
-
-        public const string Video = "video";
-
-        public const string VideoGif = "videogif";
-    }
-
     /// <summary>
     /// Request parameters for POST /api/submit.
     /// </summary>
@@ -56,9 +38,9 @@ namespace Reddit.Api.Models.Json.LinksComments
         public string? Items { get; set; }
 
         /// <summary>
-        /// Kind of submission: "self", "link", "image", "video", "videogif", "crosspost", "poll".
+        /// Kind of submission: self, link, image, video, videogif, crosspost, poll.
         /// </summary>
-        public string Kind { get; set; } = "self";
+        public SubmitKind Kind { get; set; } = SubmitKind.Self;
 
         /// <summary>
         /// Mark as NSFW.

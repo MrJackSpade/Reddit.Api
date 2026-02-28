@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Listings;
 
 namespace Reddit.Api.Tests
@@ -13,7 +14,7 @@ namespace Reddit.Api.Tests
             var subreddit = await Client!.GetSubredditAboutAsync(TestSubreddit);
 
             Assert.IsNotNull(subreddit);
-            Assert.AreEqual("t5", subreddit.Kind);
+            Assert.AreEqual(ThingKind.Subreddit, subreddit.Kind);
             Assert.IsNotNull(subreddit.Data);
             Assert.AreEqual(TestSubreddit, subreddit.Data.DisplayName, true);
             Assert.IsFalse(string.IsNullOrEmpty(subreddit.Data.Id));

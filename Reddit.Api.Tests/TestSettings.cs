@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Reddit.Api.Client;
 
 namespace Reddit.Api.Tests
 {

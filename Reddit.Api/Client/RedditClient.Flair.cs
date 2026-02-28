@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.Flair;
 
@@ -13,7 +14,7 @@ namespace Reddit.Api.Client
             Dictionary<string, string> formData = new()
             {
                 ["api_type"] = "json",
-                ["flair_type"] = request.FlairType,
+                ["flair_type"] = request.FlairType.ToJsonString(),
                 ["text"] = request.Text
             };
 

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Reddit.Api.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4c5f56ad410253a0f5da8f460e2bcc422edc433")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+184d38cd3e9cee98abea52a418f6595b10ad09e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Reddit.Api.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Reddit.Api.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

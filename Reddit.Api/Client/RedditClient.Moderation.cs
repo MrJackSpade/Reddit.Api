@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.Listings;
 using Reddit.Api.Models.Json.Moderation;
@@ -20,7 +21,7 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Thing<Comment>?> DistinguishAsync(string fullname, string how = "yes", bool? sticky = null, CancellationToken cancellationToken = default)
+        public async Task<Thing<Comment>?> DistinguishAsync(string fullname, DistinguishHow how = DistinguishHow.Yes, bool? sticky = null, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
 
@@ -28,7 +29,7 @@ namespace Reddit.Api.Client
             {
                 ["api_type"] = "json",
                 ["id"] = fullname,
-                ["how"] = how
+                ["how"] = how.ToJsonString()
             };
 
             if (sticky.HasValue)

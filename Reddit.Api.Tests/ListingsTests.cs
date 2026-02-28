@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Listings;
 
 namespace Reddit.Api.Tests
@@ -18,7 +19,7 @@ namespace Reddit.Api.Tests
             Assert.IsTrue(listing.Data.Children.Count > 0);
 
             var firstPost = listing.Data.Children[0];
-            Assert.AreEqual("t3", firstPost.Kind);
+            Assert.AreEqual(ThingKind.Link, firstPost.Kind);
             Assert.IsNotNull(firstPost.Data);
             Assert.IsFalse(string.IsNullOrEmpty(firstPost.Data.Title));
         }

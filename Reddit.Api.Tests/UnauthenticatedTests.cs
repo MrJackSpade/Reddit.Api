@@ -1,4 +1,5 @@
 using Reddit.Api.Client;
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Listings;
 
 namespace Reddit.Api.Tests
@@ -71,7 +72,7 @@ namespace Reddit.Api.Tests
             var subreddit = await _client.GetSubredditAboutAsync("AskReddit");
 
             Assert.IsNotNull(subreddit);
-            Assert.AreEqual("t5", subreddit.Kind);
+            Assert.AreEqual(ThingKind.Subreddit, subreddit.Kind);
             Assert.IsNotNull(subreddit.Data);
             Assert.AreEqual("AskReddit", subreddit.Data.DisplayName, true);
         }
@@ -110,7 +111,7 @@ namespace Reddit.Api.Tests
             var user = await _client.GetUserAboutAsync("spez");
 
             Assert.IsNotNull(user);
-            Assert.AreEqual("t2", user.Kind);
+            Assert.AreEqual(ThingKind.Account, user.Kind);
             Assert.IsNotNull(user.Data);
             Assert.AreEqual("spez", user.Data.Name, true);
         }
