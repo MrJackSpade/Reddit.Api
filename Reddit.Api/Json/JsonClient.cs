@@ -29,7 +29,7 @@ namespace Reddit.Api.Json
                     {
                         throw new EntityNotFoundException(url, response);
                     }
-                    else if(responseMessage.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    else if (responseMessage.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                     {
                         throw new TooManyRequestsException(url, response);
                     }
@@ -146,7 +146,7 @@ namespace Reddit.Api.Json
                 {
                     return func();
                 }
-                catch(TooManyRequestsException)
+                catch (TooManyRequestsException)
                 {
                     Thread.Sleep(1000);
                     Debug.WriteLine("Too many requests.  Retrying...");

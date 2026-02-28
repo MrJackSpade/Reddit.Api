@@ -23,7 +23,7 @@ namespace Reddit.Api.Interfaces
 
         Task<Dictionary<string, UserPartial>> GetPartialUserData(IEnumerable<string> usernames);
 
-        Task<ApiPost> GetPost(string id);
+        Task<ApiPost?> GetPost(string id);
 
         Task<List<ApiPost>> GetPosts(IEnumerable<string> ids);
 
@@ -31,7 +31,7 @@ namespace Reddit.Api.Interfaces
 
         Task<Stream> GetStream(string url);
 
-        Task<ApiUser> GetUserData(string username);
+        Task<ApiUser?> GetUserData(string username);
 
         Task MarkRead(ApiThing message, bool state);
 

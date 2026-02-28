@@ -207,7 +207,7 @@ namespace Reddit.Api
             return toReturn;
         }
 
-        public async Task<ApiPost> CreatePost(string subreddit, string title, string content, PostKind kind)
+        public async Task<ApiPost?> CreatePost(string subreddit, string title, string content, PostKind kind)
         {
             try
             {
@@ -308,9 +308,9 @@ namespace Reddit.Api
             }
         }
 
-        public virtual async Task<bool> DisplayException(Exception ex)
+        public virtual Task<bool> DisplayException(Exception ex)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         public async Task<Dictionary<string, UserPartial>> GetPartialUserData(IEnumerable<string> usernames)
@@ -363,7 +363,7 @@ namespace Reddit.Api
             }
         }
 
-        public async Task<ApiPost> GetPost(string id)
+        public async Task<ApiPost?> GetPost(string id)
         {
             try
             {
@@ -897,7 +897,7 @@ namespace Reddit.Api
             await this.SimpleToggle(thing, visible, $"{ApiRoot}/api/unhide", $"{ApiRoot}/api/hide");
         }
 
-        public async Task<ApiComment> Update(ApiThing thing)
+        public async Task<ApiComment?> Update(ApiThing thing)
         {
             try
             {
