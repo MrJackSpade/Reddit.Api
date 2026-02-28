@@ -1,4 +1,4 @@
-using Reddit.Api.Converters;
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Account
@@ -9,7 +9,7 @@ namespace Reddit.Api.Models.Json.Account
     public class MeResponse
     {
         [JsonPropertyName("accept_pms")]
-        public string? AcceptPms { get; set; }
+        public AcceptPms? AcceptPms { get; set; }
 
         [JsonPropertyName("awardee_karma")]
         public int AwardeeKarma { get; set; }
@@ -30,12 +30,10 @@ namespace Reddit.Api.Models.Json.Account
         public int CommentKarma { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("features")]
         public Dictionary<string, object>? Features { get; set; }
@@ -47,7 +45,7 @@ namespace Reddit.Api.Models.Json.Account
         public int GoldCreddits { get; set; }
 
         [JsonPropertyName("gold_expiration")]
-        public double? GoldExpiration { get; set; }
+        public JsonDateTime GoldExpiration { get; set; }
 
         [JsonPropertyName("has_android_subscription")]
         public bool HasAndroidSubscription { get; set; }
@@ -176,8 +174,7 @@ namespace Reddit.Api.Models.Json.Account
         public string? SnoovatarImg { get; set; }
 
         [JsonPropertyName("suspension_expiration_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? SuspensionExpirationUtc { get; set; }
+        public JsonDateTime SuspensionExpirationUtc { get; set; }
 
         [JsonPropertyName("total_karma")]
         public int TotalKarma { get; set; }

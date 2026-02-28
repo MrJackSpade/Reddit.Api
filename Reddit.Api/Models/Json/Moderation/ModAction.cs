@@ -1,4 +1,4 @@
-using Reddit.Api.Converters;
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Moderation
@@ -9,11 +9,10 @@ namespace Reddit.Api.Models.Json.Moderation
     public class ModAction
     {
         [JsonPropertyName("action")]
-        public string Action { get; set; } = string.Empty;
+        public ModActionType Action { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }

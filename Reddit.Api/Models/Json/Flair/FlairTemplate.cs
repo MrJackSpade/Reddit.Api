@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Listings;
 using System.Text.Json.Serialization;
 
@@ -9,10 +10,10 @@ namespace Reddit.Api.Models.Json.Flair
     public class FlairTemplate
     {
         [JsonPropertyName("allowable_content")]
-        public string? AllowableContent { get; set; }
+        public FlairAllowableContent? AllowableContent { get; set; }
 
         [JsonPropertyName("background_color")]
-        public string BackgroundColor { get; set; } = string.Empty;
+        public JsonColor BackgroundColor { get; set; }
 
         [JsonPropertyName("css_class")]
         public string? CssClass { get; set; }
@@ -36,7 +37,7 @@ namespace Reddit.Api.Models.Json.Flair
         public string Text { get; set; } = string.Empty;
 
         [JsonPropertyName("text_color")]
-        public string TextColor { get; set; } = string.Empty;
+        public JsonColor TextColor { get; set; }
 
         [JsonPropertyName("text_editable")]
         public bool TextEditable { get; set; }

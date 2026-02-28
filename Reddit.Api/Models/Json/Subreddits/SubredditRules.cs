@@ -1,4 +1,3 @@
-using Reddit.Api.Converters;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Subreddits
@@ -27,8 +26,7 @@ namespace Reddit.Api.Models.Json.Subreddits
     public class SubredditRule
     {
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }

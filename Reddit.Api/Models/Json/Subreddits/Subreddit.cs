@@ -1,4 +1,3 @@
-using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -49,7 +48,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool AllowVideos { get; set; }
 
         [JsonPropertyName("banner_background_color")]
-        public string? BannerBackgroundColor { get; set; }
+        public JsonColor BannerBackgroundColor { get; set; }
 
         [JsonPropertyName("banner_background_image")]
         public string? BannerBackgroundImage { get; set; }
@@ -76,12 +75,10 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? CommunityIcon { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
@@ -135,7 +132,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool? IsCrosspostableSubreddit { get; set; }
 
         [JsonPropertyName("key_color")]
-        public string? KeyColor { get; set; }
+        public JsonColor KeyColor { get; set; }
 
         [JsonPropertyName("lang")]
         public string? Lang { get; set; }
@@ -144,7 +141,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool LinkFlairEnabled { get; set; }
 
         [JsonPropertyName("link_flair_position")]
-        public string? LinkFlairPosition { get; set; }
+        public FlairPosition LinkFlairPosition { get; set; }
 
         [JsonPropertyName("mobile_banner_image")]
         public string? MobileBannerImage { get; set; }
@@ -162,7 +159,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool Over18 { get; set; }
 
         [JsonPropertyName("primary_color")]
-        public string? PrimaryColor { get; set; }
+        public JsonColor PrimaryColor { get; set; }
 
         [JsonPropertyName("public_description")]
         public string? PublicDescription { get; set; }
@@ -192,7 +189,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool SpilersEnabled { get; set; }
 
         [JsonPropertyName("submission_type")]
-        public string? SubmissionType { get; set; }
+        public SubmissionType SubmissionType { get; set; }
 
         [JsonPropertyName("submit_text")]
         public string? SubmitText { get; set; }
@@ -201,7 +198,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? SubmitTextHtml { get; set; }
 
         [JsonPropertyName("subreddit_type")]
-        public string SubredditType { get; set; } = string.Empty;
+        public SubredditType SubredditType { get; set; }
 
         [JsonPropertyName("subscribers")]
         public int Subscribers { get; set; }
@@ -216,7 +213,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string Url { get; set; } = string.Empty;
 
         [JsonPropertyName("user_flair_background_color")]
-        public string? UserFlairBackgroundColor { get; set; }
+        public JsonColor UserFlairBackgroundColor { get; set; }
 
         [JsonPropertyName("user_flair_css_class")]
         public string? UserFlairCssClass { get; set; }
@@ -225,7 +222,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool? UserFlairEnabledInSr { get; set; }
 
         [JsonPropertyName("user_flair_position")]
-        public string? UserFlairPosition { get; set; }
+        public FlairPosition UserFlairPosition { get; set; }
 
         [JsonPropertyName("user_flair_richtext")]
         public List<object>? UserFlairRichtext { get; set; }
@@ -237,7 +234,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? UserFlairText { get; set; }
 
         [JsonPropertyName("user_flair_text_color")]
-        public string? UserFlairTextColor { get; set; }
+        public JsonColor UserFlairTextColor { get; set; }
 
         [JsonPropertyName("user_flair_type")]
         public string? UserFlairType { get; set; }

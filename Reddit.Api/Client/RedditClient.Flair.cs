@@ -28,14 +28,14 @@ namespace Reddit.Api.Client
                 formData["css_class"] = request.CssClass;
             }
 
-            if (!string.IsNullOrEmpty(request.TextColor))
+            if (request.TextColor.HasValue)
             {
-                formData["text_color"] = request.TextColor;
+                formData["text_color"] = request.TextColor.Value;
             }
 
-            if (!string.IsNullOrEmpty(request.BackgroundColor))
+            if (request.BackgroundColor.HasValue)
             {
-                formData["background_color"] = request.BackgroundColor;
+                formData["background_color"] = request.BackgroundColor.Value;
             }
 
             if (request.TextEditable.HasValue)
@@ -144,14 +144,14 @@ namespace Reddit.Api.Client
                 formData["css_class"] = request.CssClass;
             }
 
-            if (!string.IsNullOrEmpty(request.BackgroundColor))
+            if (request.BackgroundColor.HasValue)
             {
-                formData["background_color"] = request.BackgroundColor;
+                formData["background_color"] = request.BackgroundColor.Value;
             }
 
-            if (!string.IsNullOrEmpty(request.TextColor))
+            if (request.TextColor.HasValue)
             {
-                formData["text_color"] = request.TextColor;
+                formData["text_color"] = request.TextColor.Value;
             }
 
             return await this.PostFormAsync($"/r/{subreddit}/api/selectflair", formData, cancellationToken);

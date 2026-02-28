@@ -1,4 +1,3 @@
-using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -13,8 +12,7 @@ namespace Reddit.Api.Models.Json.Listings
         public List<Award>? AllAwardings { get; set; }
 
         [JsonPropertyName("approved_at_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? ApprovedAtUtc { get; set; }
+        public JsonDateTime ApprovedAtUtc { get; set; }
 
         [JsonPropertyName("approved_by")]
         public string? ApprovedBy { get; set; }
@@ -29,7 +27,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string Author { get; set; } = string.Empty;
 
         [JsonPropertyName("author_flair_background_color")]
-        public string? AuthorFlairBackgroundColor { get; set; }
+        public JsonColor AuthorFlairBackgroundColor { get; set; }
 
         [JsonPropertyName("author_flair_css_class")]
         public string? AuthorFlairCssClass { get; set; }
@@ -44,14 +42,13 @@ namespace Reddit.Api.Models.Json.Listings
         public string? AuthorFlairText { get; set; }
 
         [JsonPropertyName("author_flair_text_color")]
-        public string? AuthorFlairTextColor { get; set; }
+        public JsonColor AuthorFlairTextColor { get; set; }
 
         [JsonPropertyName("author_fullname")]
         public string? AuthorFullname { get; set; }
 
         [JsonPropertyName("banned_at_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? BannedAtUtc { get; set; }
+        public JsonDateTime BannedAtUtc { get; set; }
 
         [JsonPropertyName("banned_by")]
         public string? BannedBy { get; set; }
@@ -90,12 +87,10 @@ namespace Reddit.Api.Models.Json.Listings
         public int? Count { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("depth")]
         public int Depth { get; set; }
@@ -107,8 +102,7 @@ namespace Reddit.Api.Models.Json.Listings
         public int Downs { get; set; }
 
         [JsonPropertyName("edited")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Edited { get; set; }
+        public JsonDateTime Edited { get; set; }
 
         [JsonPropertyName("gilded")]
         public int Gilded { get; set; }
@@ -214,7 +208,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? SubredditNamePrefixed { get; set; }
 
         [JsonPropertyName("subreddit_type")]
-        public string? SubredditType { get; set; }
+        public SubredditType SubredditType { get; set; }
 
         [JsonPropertyName("top_awarded_type")]
         public string? TopAwardedType { get; set; }

@@ -1,3 +1,5 @@
+using Reddit.Api.Converters;
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Account
@@ -9,7 +11,7 @@ namespace Reddit.Api.Models.Json.Account
     public class PrefsResponse
     {
         [JsonPropertyName("accept_pms")]
-        public string? AcceptPms { get; set; }
+        public AcceptPms? AcceptPms { get; set; }
 
         [JsonPropertyName("activity_relevant_ads")]
         public bool? ActivityRelevantAds { get; set; }
@@ -213,7 +215,7 @@ namespace Reddit.Api.Models.Json.Account
         public bool? StoreVisits { get; set; }
 
         [JsonPropertyName("survey_last_seen_time")]
-        public double? SurveyLastSeenTime { get; set; }
+        public long? SurveyLastSeenTime { get; set; }
 
         [JsonPropertyName("theme_selector")]
         public string? ThemeSelector { get; set; }

@@ -15,7 +15,7 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Background color (hex).
         /// </summary>
-        public string? BackgroundColor { get; set; }
+        public JsonColor BackgroundColor { get; set; }
 
         /// <summary>
         /// CSS class.
@@ -55,7 +55,7 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Text color: light or dark.
         /// </summary>
-        public string? TextColor { get; set; }
+        public JsonColor TextColor { get; set; }
 
         /// <summary>
         /// Whether text is editable by users.
@@ -71,7 +71,7 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Background color (hex).
         /// </summary>
-        public string? BackgroundColor { get; set; }
+        public JsonColor BackgroundColor { get; set; }
 
         /// <summary>
         /// CSS class for flair.
@@ -101,6 +101,6 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Text color: light or dark.
         /// </summary>
-        public string? TextColor { get; set; }
+        public JsonColor TextColor { get; set; }
     }
 }

@@ -51,7 +51,7 @@ namespace Reddit.Api.Models.Json.Multis
         /// <summary>
         /// Key color (hex).
         /// </summary>
-        public string? KeyColor { get; set; }
+        public JsonColor KeyColor { get; set; }
 
         /// <summary>
         /// List of subreddits to include.

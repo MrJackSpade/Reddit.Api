@@ -1,4 +1,4 @@
-using Reddit.Api.Converters;
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Users
@@ -27,12 +27,10 @@ namespace Reddit.Api.Models.Json.Users
         public int CommentKarma { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("has_subscribed")]
         public bool? HasSubscribed { get; set; }
@@ -128,7 +126,7 @@ namespace Reddit.Api.Models.Json.Users
         public bool? IsDefaultIcon { get; set; }
 
         [JsonPropertyName("key_color")]
-        public string? KeyColor { get; set; }
+        public JsonColor KeyColor { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
@@ -137,13 +135,13 @@ namespace Reddit.Api.Models.Json.Users
         public bool? Over18 { get; set; }
 
         [JsonPropertyName("primary_color")]
-        public string? PrimaryColor { get; set; }
+        public JsonColor PrimaryColor { get; set; }
 
         [JsonPropertyName("public_description")]
         public string? PublicDescription { get; set; }
 
         [JsonPropertyName("subreddit_type")]
-        public string? SubredditType { get; set; }
+        public SubredditType SubredditType { get; set; }
 
         [JsonPropertyName("subscribers")]
         public int? Subscribers { get; set; }

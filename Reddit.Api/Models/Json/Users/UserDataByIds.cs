@@ -19,7 +19,7 @@ namespace Reddit.Api.Models.Json.Users
         public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("profile_color")]
-        public string? ProfileColor { get; set; }
+        public JsonColor ProfileColor { get; set; }
 
         [JsonPropertyName("profile_img")]
         public string? ProfileImg { get; set; }

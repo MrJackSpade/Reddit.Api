@@ -1,4 +1,4 @@
-using Reddit.Api.Converters;
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.LiveThreads
@@ -38,12 +38,10 @@ namespace Reddit.Api.Models.Json.LiveThreads
         public string? ButtonCta { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
@@ -64,7 +62,7 @@ namespace Reddit.Api.Models.Json.LiveThreads
         public bool Nsfw { get; set; }
 
         [JsonPropertyName("original_content_expiry")]
-        public double? OriginalContentExpiry { get; set; }
+        public JsonDateTime OriginalContentExpiry { get; set; }
 
         [JsonPropertyName("original_content_owner_id")]
         public string? OriginalContentOwnerId { get; set; }
@@ -76,7 +74,7 @@ namespace Reddit.Api.Models.Json.LiveThreads
         public string? ResourcesHtml { get; set; }
 
         [JsonPropertyName("state")]
-        public string State { get; set; } = string.Empty;
+        public LiveThreadState State { get; set; }
 
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
@@ -118,12 +116,10 @@ namespace Reddit.Api.Models.Json.LiveThreads
         public string? BodyHtml { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("embeds")]
         public List<LiveUpdateEmbed>? Embeds { get; set; }

@@ -1,4 +1,3 @@
-using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -139,8 +138,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool AllowLiveComments { get; set; }
 
         [JsonPropertyName("approved_at_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? ApprovedAtUtc { get; set; }
+        public JsonDateTime ApprovedAtUtc { get; set; }
 
         [JsonPropertyName("approved_by")]
         public string? ApprovedBy { get; set; }
@@ -152,7 +150,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string Author { get; set; } = string.Empty;
 
         [JsonPropertyName("author_flair_background_color")]
-        public string? AuthorFlairBackgroundColor { get; set; }
+        public JsonColor AuthorFlairBackgroundColor { get; set; }
 
         [JsonPropertyName("author_flair_css_class")]
         public string? AuthorFlairCssClass { get; set; }
@@ -167,14 +165,13 @@ namespace Reddit.Api.Models.Json.Listings
         public string? AuthorFlairText { get; set; }
 
         [JsonPropertyName("author_flair_text_color")]
-        public string? AuthorFlairTextColor { get; set; }
+        public JsonColor AuthorFlairTextColor { get; set; }
 
         [JsonPropertyName("author_fullname")]
         public string? AuthorFullname { get; set; }
 
         [JsonPropertyName("banned_at_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? BannedAtUtc { get; set; }
+        public JsonDateTime BannedAtUtc { get; set; }
 
         [JsonPropertyName("banned_by")]
         public string? BannedBy { get; set; }
@@ -195,12 +192,10 @@ namespace Reddit.Api.Models.Json.Listings
         public bool ContestMode { get; set; }
 
         [JsonPropertyName("created")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Created { get; set; }
+        public JsonDateTime Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? CreatedUtc { get; set; }
+        public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("crosspost_parent")]
         public string? CrosspostParent { get; set; }
@@ -221,8 +216,7 @@ namespace Reddit.Api.Models.Json.Listings
         public int Downs { get; set; }
 
         [JsonPropertyName("edited")]
-        [JsonConverter(typeof(UnixTimestampConverter))]
-        public DateTime? Edited { get; set; }
+        public JsonDateTime Edited { get; set; }
 
         [JsonPropertyName("gallery_data")]
         public GalleryData? GalleryData { get; set; }
@@ -270,7 +264,7 @@ namespace Reddit.Api.Models.Json.Listings
         public VoteState Likes { get; set; }
 
         [JsonPropertyName("link_flair_background_color")]
-        public string? LinkFlairBackgroundColor { get; set; }
+        public JsonColor LinkFlairBackgroundColor { get; set; }
 
         [JsonPropertyName("link_flair_css_class")]
         public string? LinkFlairCssClass { get; set; }
@@ -285,7 +279,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? LinkFlairText { get; set; }
 
         [JsonPropertyName("link_flair_text_color")]
-        public string? LinkFlairTextColor { get; set; }
+        public JsonColor LinkFlairTextColor { get; set; }
 
         [JsonPropertyName("link_flair_type")]
         public string? LinkFlairType { get; set; }
@@ -340,7 +334,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool Pinned { get; set; }
 
         [JsonPropertyName("post_hint")]
-        public string? PostHint { get; set; }
+        public PostHint PostHint { get; set; }
 
         [JsonPropertyName("preview")]
         public Preview? Preview { get; set; }
@@ -407,7 +401,7 @@ namespace Reddit.Api.Models.Json.Listings
         public int? SubredditSubscribers { get; set; }
 
         [JsonPropertyName("subreddit_type")]
-        public string? SubredditType { get; set; }
+        public SubredditType SubredditType { get; set; }
 
         [JsonPropertyName("suggested_sort")]
         public CommentSort? SuggestedSort { get; set; }

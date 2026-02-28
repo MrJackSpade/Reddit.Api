@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Widgets
@@ -31,7 +32,7 @@ namespace Reddit.Api.Models.Json.Widgets
         public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("kind")]
-        public string Kind { get; set; } = string.Empty;
+        public WidgetKind Kind { get; set; }
 
         [JsonPropertyName("shortName")]
         public string? ShortName { get; set; }
@@ -50,10 +51,10 @@ namespace Reddit.Api.Models.Json.Widgets
     public class WidgetButton
     {
         [JsonPropertyName("color")]
-        public string? Color { get; set; }
+        public JsonColor Color { get; set; }
 
         [JsonPropertyName("fillColor")]
-        public string? FillColor { get; set; }
+        public JsonColor FillColor { get; set; }
 
         [JsonPropertyName("hoverState")]
         public WidgetButtonHover? HoverState { get; set; }
@@ -65,7 +66,7 @@ namespace Reddit.Api.Models.Json.Widgets
         public string? Text { get; set; }
 
         [JsonPropertyName("textColor")]
-        public string? TextColor { get; set; }
+        public JsonColor TextColor { get; set; }
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }
@@ -74,13 +75,13 @@ namespace Reddit.Api.Models.Json.Widgets
     public class WidgetButtonHover
     {
         [JsonPropertyName("color")]
-        public string? Color { get; set; }
+        public JsonColor Color { get; set; }
 
         [JsonPropertyName("fillColor")]
-        public string? FillColor { get; set; }
+        public JsonColor FillColor { get; set; }
 
         [JsonPropertyName("textColor")]
-        public string? TextColor { get; set; }
+        public JsonColor TextColor { get; set; }
     }
 
     public class WidgetCommunity
@@ -98,7 +99,7 @@ namespace Reddit.Api.Models.Json.Widgets
         public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("primaryColor")]
-        public string? PrimaryColor { get; set; }
+        public JsonColor PrimaryColor { get; set; }
 
         [JsonPropertyName("subscribers")]
         public int? Subscribers { get; set; }
@@ -158,10 +159,10 @@ namespace Reddit.Api.Models.Json.Widgets
     public class WidgetStyles
     {
         [JsonPropertyName("backgroundColor")]
-        public string? BackgroundColor { get; set; }
+        public JsonColor BackgroundColor { get; set; }
 
         [JsonPropertyName("headerColor")]
-        public string? HeaderColor { get; set; }
+        public JsonColor HeaderColor { get; set; }
     }
 
     public class WidgetTopbar

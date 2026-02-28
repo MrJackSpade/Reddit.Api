@@ -28,7 +28,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public bool? IsChatPostFeatureEnabled { get; set; }
 
         [JsonPropertyName("key_color")]
-        public string? KeyColor { get; set; }
+        public JsonColor KeyColor { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
