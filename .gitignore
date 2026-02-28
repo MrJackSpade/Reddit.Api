@@ -1,3 +1,5 @@
 Reddit.Api/bin/
 Reddit.Api/obj/
 .vs/
+Reddit.Api.Tests/bin/
+Reddit.Api.Tests/obj/

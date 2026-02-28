@@ -33,6 +33,9 @@ namespace Reddit.Api.Models.Enums
         More,
 
         [JsonStringEnumMemberName("LabeledMulti")]
-        Multi
+        Multi,
+
+        [JsonStringEnumMemberName("modaction")]
+        ModAction
     }
 }

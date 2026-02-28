@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Listings
@@ -77,7 +78,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? CollapsedReason { get; set; }
 
         [JsonPropertyName("collapsed_reason_code")]
-        public string? CollapsedReasonCode { get; set; }
+        public CollapsedReasonCode? CollapsedReasonCode { get; set; }
 
         [JsonPropertyName("controversiality")]
         public int Controversiality { get; set; }
@@ -95,7 +96,7 @@ namespace Reddit.Api.Models.Json.Listings
         public int Depth { get; set; }
 
         [JsonPropertyName("distinguished")]
-        public string? Distinguished { get; set; }
+        public DistinguishedKind? Distinguished { get; set; }
 
         [JsonPropertyName("downs")]
         public int Downs { get; set; }

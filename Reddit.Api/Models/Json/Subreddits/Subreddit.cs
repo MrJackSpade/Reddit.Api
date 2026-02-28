@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Subreddits
@@ -203,7 +204,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public int Subscribers { get; set; }
 
         [JsonPropertyName("suggested_comment_sort")]
-        public string? SuggestedCommentSort { get; set; }
+        public CommentSort? SuggestedCommentSort { get; set; }
 
         [JsonPropertyName("title")]
         public string? Title { get; set; }

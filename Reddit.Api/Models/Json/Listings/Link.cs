@@ -1,3 +1,4 @@
+using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Listings
@@ -206,7 +207,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? DiscussionType { get; set; }
 
         [JsonPropertyName("distinguished")]
-        public string? Distinguished { get; set; }
+        public DistinguishedKind? Distinguished { get; set; }
 
         [JsonPropertyName("domain")]
         public string? Domain { get; set; }
@@ -403,7 +404,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? SubredditType { get; set; }
 
         [JsonPropertyName("suggested_sort")]
-        public string? SuggestedSort { get; set; }
+        public CommentSort? SuggestedSort { get; set; }
 
         [JsonPropertyName("thumbnail")]
         public string? Thumbnail { get; set; }
