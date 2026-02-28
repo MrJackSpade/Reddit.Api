@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Messages
@@ -26,10 +27,12 @@ namespace Reddit.Api.Models.Json.Messages
         public string? Context { get; set; }
 
         [JsonPropertyName("created")]
-        public double Created { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        public double CreatedUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? CreatedUtc { get; set; }
 
         [JsonPropertyName("dest")]
         public string? Dest { get; set; }

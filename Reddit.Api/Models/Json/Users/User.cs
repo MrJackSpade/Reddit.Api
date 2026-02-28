@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Users
@@ -26,10 +27,12 @@ namespace Reddit.Api.Models.Json.Users
         public int CommentKarma { get; set; }
 
         [JsonPropertyName("created")]
-        public double Created { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        public double CreatedUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? CreatedUtc { get; set; }
 
         [JsonPropertyName("has_subscribed")]
         public bool? HasSubscribed { get; set; }

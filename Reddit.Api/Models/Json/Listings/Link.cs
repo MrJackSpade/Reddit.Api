@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -138,7 +139,8 @@ namespace Reddit.Api.Models.Json.Listings
         public bool AllowLiveComments { get; set; }
 
         [JsonPropertyName("approved_at_utc")]
-        public double? ApprovedAtUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? ApprovedAtUtc { get; set; }
 
         [JsonPropertyName("approved_by")]
         public string? ApprovedBy { get; set; }
@@ -171,7 +173,8 @@ namespace Reddit.Api.Models.Json.Listings
         public string? AuthorFullname { get; set; }
 
         [JsonPropertyName("banned_at_utc")]
-        public double? BannedAtUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? BannedAtUtc { get; set; }
 
         [JsonPropertyName("banned_by")]
         public string? BannedBy { get; set; }
@@ -192,10 +195,12 @@ namespace Reddit.Api.Models.Json.Listings
         public bool ContestMode { get; set; }
 
         [JsonPropertyName("created")]
-        public double Created { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        public double CreatedUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? CreatedUtc { get; set; }
 
         [JsonPropertyName("crosspost_parent")]
         public string? CrosspostParent { get; set; }
@@ -216,7 +221,8 @@ namespace Reddit.Api.Models.Json.Listings
         public int Downs { get; set; }
 
         [JsonPropertyName("edited")]
-        public object? Edited { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? Edited { get; set; }
 
         [JsonPropertyName("gallery_data")]
         public GalleryData? GalleryData { get; set; }

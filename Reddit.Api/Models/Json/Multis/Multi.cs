@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Multis
@@ -14,10 +15,12 @@ namespace Reddit.Api.Models.Json.Multis
         public string? CopiedFrom { get; set; }
 
         [JsonPropertyName("created")]
-        public double Created { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        public double CreatedUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? CreatedUtc { get; set; }
 
         [JsonPropertyName("description_html")]
         public string? DescriptionHtml { get; set; }

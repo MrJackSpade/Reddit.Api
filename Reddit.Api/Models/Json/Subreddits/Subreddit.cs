@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -75,10 +76,12 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? CommunityIcon { get; set; }
 
         [JsonPropertyName("created")]
-        public double Created { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? Created { get; set; }
 
         [JsonPropertyName("created_utc")]
-        public double CreatedUtc { get; set; }
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime? CreatedUtc { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
