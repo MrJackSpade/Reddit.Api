@@ -13,20 +13,23 @@ namespace Reddit.Api.Converters
     /// </summary>
     public class EmptyStringEnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
     {
-        private readonly Dictionary<string, TEnum> _stringToEnum;
-        private readonly Dictionary<TEnum, string?> _enumToString;
-        private readonly TEnum? _nullValue;
         private readonly TEnum? _emptyValue;
+
+        private readonly Dictionary<TEnum, string?> _enumToString;
+
+        private readonly TEnum? _nullValue;
+
+        private readonly Dictionary<string, TEnum> _stringToEnum;
 
         public EmptyStringEnumConverter()
         {
             _stringToEnum = new Dictionary<string, TEnum>(StringComparer.OrdinalIgnoreCase);
             _enumToString = new Dictionary<TEnum, string?>();
 
-            foreach (var field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static))
+            foreach (FieldInfo field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static))
             {
-                var value = (TEnum)field.GetValue(null)!;
-                var attr = field.GetCustomAttributes(typeof(JsonStringEnumMemberNameAttribute), false)
+                TEnum value = (TEnum)field.GetValue(null)!;
+                JsonStringEnumMemberNameAttribute? attr = field.GetCustomAttributes(typeof(JsonStringEnumMemberNameAttribute), false)
                     .OfType<JsonStringEnumMemberNameAttribute>()
                     .FirstOrDefault();
 
@@ -92,7 +95,7 @@ namespace Reddit.Api.Converters
                     throw new JsonException($"Enum {typeof(TEnum).Name} does not have an 'Empty' value to handle empty string");
                 }
 
-                if (_stringToEnum.TryGetValue(stringValue, out var enumValue))
+                if (_stringToEnum.TryGetValue(stringValue, out TEnum enumValue))
                 {
                     return enumValue;
                 }
@@ -105,7 +108,7 @@ namespace Reddit.Api.Converters
 
         public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
         {
-            if (_enumToString.TryGetValue(value, out var stringValue))
+            if (_enumToString.TryGetValue(value, out string? stringValue))
             {
                 if (stringValue == null)
                 {

@@ -32,6 +32,7 @@ namespace Reddit.Api.Converters
                     {
                         return null;
                     }
+
                     return UnixEpoch.AddSeconds(timestamp);
 
                 case JsonTokenType.String:
@@ -40,10 +41,12 @@ namespace Reddit.Api.Converters
                     {
                         return null;
                     }
+
                     if (double.TryParse(str, out double parsedTimestamp) && parsedTimestamp > 0)
                     {
                         return UnixEpoch.AddSeconds(parsedTimestamp);
                     }
+
                     return null;
 
                 default:
