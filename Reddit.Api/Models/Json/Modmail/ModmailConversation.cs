@@ -1,0 +1,216 @@
+using System.Text.Json.Serialization;
+
+namespace Reddit.Api.Models.Json.Modmail
+{
+    /// <summary>
+    /// Response from modmail conversation endpoints.
+    /// </summary>
+    public class ModmailConversationsResponse
+    {
+        [JsonPropertyName("conversations")]
+        public Dictionary<string, ModmailConversation>? Conversations { get; set; }
+
+        [JsonPropertyName("messages")]
+        public Dictionary<string, ModmailMessage>? Messages { get; set; }
+
+        [JsonPropertyName("viewerId")]
+        public string? ViewerId { get; set; }
+
+        [JsonPropertyName("conversationIds")]
+        public List<string>? ConversationIds { get; set; }
+    }
+
+    /// <summary>
+    /// Modmail conversation.
+    /// </summary>
+    public class ModmailConversation
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("subject")]
+        public string Subject { get; set; } = string.Empty;
+
+        [JsonPropertyName("state")]
+        public int State { get; set; }
+
+        [JsonPropertyName("lastUpdated")]
+        public string? LastUpdated { get; set; }
+
+        [JsonPropertyName("lastModUpdate")]
+        public string? LastModUpdate { get; set; }
+
+        [JsonPropertyName("lastUserUpdate")]
+        public string? LastUserUpdate { get; set; }
+
+        [JsonPropertyName("lastUnread")]
+        public string? LastUnread { get; set; }
+
+        [JsonPropertyName("numMessages")]
+        public int NumMessages { get; set; }
+
+        [JsonPropertyName("isAuto")]
+        public bool IsAuto { get; set; }
+
+        [JsonPropertyName("isInternal")]
+        public bool IsInternal { get; set; }
+
+        [JsonPropertyName("isRepliable")]
+        public bool IsRepliable { get; set; }
+
+        [JsonPropertyName("isHighlighted")]
+        public bool IsHighlighted { get; set; }
+
+        [JsonPropertyName("authors")]
+        public List<ModmailAuthor>? Authors { get; set; }
+
+        [JsonPropertyName("objIds")]
+        public List<ModmailObjId>? ObjIds { get; set; }
+
+        [JsonPropertyName("owner")]
+        public ModmailOwner? Owner { get; set; }
+
+        [JsonPropertyName("participant")]
+        public ModmailParticipant? Participant { get; set; }
+    }
+
+    public class ModmailAuthor
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("isMod")]
+        public bool IsMod { get; set; }
+
+        [JsonPropertyName("isAdmin")]
+        public bool IsAdmin { get; set; }
+
+        [JsonPropertyName("isOp")]
+        public bool IsOp { get; set; }
+
+        [JsonPropertyName("isParticipant")]
+        public bool IsParticipant { get; set; }
+
+        [JsonPropertyName("isHidden")]
+        public bool IsHidden { get; set; }
+
+        [JsonPropertyName("isDeleted")]
+        public bool IsDeleted { get; set; }
+    }
+
+    public class ModmailObjId
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("key")]
+        public string Key { get; set; } = string.Empty;
+    }
+
+    public class ModmailOwner
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("displayName")]
+        public string? DisplayName { get; set; }
+    }
+
+    public class ModmailParticipant
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("isMod")]
+        public bool IsMod { get; set; }
+
+        [JsonPropertyName("isAdmin")]
+        public bool IsAdmin { get; set; }
+
+        [JsonPropertyName("isOp")]
+        public bool IsOp { get; set; }
+
+        [JsonPropertyName("isParticipant")]
+        public bool IsParticipant { get; set; }
+
+        [JsonPropertyName("isHidden")]
+        public bool IsHidden { get; set; }
+
+        [JsonPropertyName("isDeleted")]
+        public bool IsDeleted { get; set; }
+    }
+
+    /// <summary>
+    /// Modmail message.
+    /// </summary>
+    public class ModmailMessage
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("author")]
+        public ModmailAuthor? Author { get; set; }
+
+        [JsonPropertyName("body")]
+        public string Body { get; set; } = string.Empty;
+
+        [JsonPropertyName("bodyMarkdown")]
+        public string? BodyMarkdown { get; set; }
+
+        [JsonPropertyName("date")]
+        public string? Date { get; set; }
+
+        [JsonPropertyName("isInternal")]
+        public bool IsInternal { get; set; }
+    }
+
+    /// <summary>
+    /// Modmail conversation state.
+    /// </summary>
+    public static class ModmailState
+    {
+        public const int New = 0;
+        public const int InProgress = 1;
+        public const int Archived = 2;
+    }
+
+    /// <summary>
+    /// Request to create modmail conversation.
+    /// </summary>
+    public class CreateModmailRequest
+    {
+        /// <summary>
+        /// Recipient username.
+        /// </summary>
+        public string To { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Subject line.
+        /// </summary>
+        public string Subject { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Message body.
+        /// </summary>
+        public string Body { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Subreddit name.
+        /// </summary>
+        public string Subreddit { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether this is an internal mod discussion.
+        /// </summary>
+        public bool? IsAuthorHidden { get; set; }
+    }
+}
