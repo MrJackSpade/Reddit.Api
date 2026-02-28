@@ -16,7 +16,7 @@ namespace Reddit.Api.Models.Json.LiveThreads
         /// <summary>
         /// Whether the live thread is NSFW.
         /// </summary>
-        public bool? Nsfw { get; set; }
+        public JsonBool Nsfw { get; set; }
 
         /// <summary>
         /// Resources markdown.

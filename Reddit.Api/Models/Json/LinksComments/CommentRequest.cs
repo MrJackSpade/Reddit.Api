@@ -8,7 +8,7 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Return RTE JSON format.
         /// </summary>
-        public bool? ReturnRtjson { get; set; }
+        public JsonBool ReturnRtjson { get; set; }
 
         /// <summary>
         /// The richtext_json (optional).

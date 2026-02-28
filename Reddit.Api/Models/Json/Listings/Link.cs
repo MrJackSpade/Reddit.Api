@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -207,7 +208,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? DiscussionType { get; set; }
 
         [JsonPropertyName("distinguished")]
-        public DistinguishedKind? Distinguished { get; set; }
+        public DistinguishedKind Distinguished { get; set; }
 
         [JsonPropertyName("domain")]
         public string? Domain { get; set; }
@@ -240,7 +241,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool IsCrosspostable { get; set; }
 
         [JsonPropertyName("is_gallery")]
-        public bool? IsGallery { get; set; }
+        public JsonBool IsGallery { get; set; }
 
         [JsonPropertyName("is_meta")]
         public bool IsMeta { get; set; }
@@ -370,16 +371,18 @@ namespace Reddit.Api.Models.Json.Listings
         public MediaEmbed? SecureMediaEmbed { get; set; }
 
         [JsonPropertyName("selftext")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Selftext { get; set; }
 
         [JsonPropertyName("selftext_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? SelftextHtml { get; set; }
 
         [JsonPropertyName("send_replies")]
         public bool SendReplies { get; set; }
 
         [JsonPropertyName("spam")]
-        public bool? Spam { get; set; }
+        public JsonBool Spam { get; set; }
 
         // Can be bool false or timestamp
         [JsonPropertyName("spoiler")]
@@ -473,7 +476,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? MediaDomainUrl { get; set; }
 
         [JsonPropertyName("scrolling")]
-        public bool? Scrolling { get; set; }
+        public JsonBool Scrolling { get; set; }
 
         [JsonPropertyName("width")]
         public int? Width { get; set; }
@@ -578,7 +581,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? FallbackUrl { get; set; }
 
         [JsonPropertyName("has_audio")]
-        public bool? HasAudio { get; set; }
+        public JsonBool HasAudio { get; set; }
 
         [JsonPropertyName("height")]
         public int? Height { get; set; }

@@ -46,9 +46,9 @@ namespace Reddit.Api.Client
                 ["srName"] = request.Subreddit
             };
 
-            if (request.IsAuthorHidden.HasValue)
+            if (!request.IsAuthorHidden.IsNull)
             {
-                formData["isAuthorHidden"] = request.IsAuthorHidden.Value.ToString().ToLower();
+                formData["isAuthorHidden"] = request.IsAuthorHidden.ToString();
             }
 
             return await this.PostFormAsync<ModmailConversationsResponse>("/api/mod/conversations", formData, cancellationToken);

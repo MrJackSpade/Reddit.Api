@@ -20,6 +20,6 @@ namespace Reddit.Api.Models.Json.Moderation
         /// <summary>
         /// Whether to sticky the comment (top-level comments only).
         /// </summary>
-        public bool? Sticky { get; set; }
+        public JsonBool Sticky { get; set; }
     }
 }

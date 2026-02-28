@@ -15,6 +15,15 @@ namespace Reddit.Api.Models.Json.Users
     /// </summary>
     public class UserPartialData
     {
+        [JsonPropertyName("comment_karma")]
+        public int CommentKarma { get; set; }
+
+        [JsonPropertyName("created_utc")]
+        public JsonDateTime CreatedUtc { get; set; }
+
+        [JsonPropertyName("link_karma")]
+        public int LinkKarma { get; set; }
+
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
@@ -25,6 +34,6 @@ namespace Reddit.Api.Models.Json.Users
         public string? ProfileImg { get; set; }
 
         [JsonPropertyName("profile_over_18")]
-        public bool? ProfileOver18 { get; set; }
+        public JsonBool ProfileOver18 { get; set; }
     }
 }

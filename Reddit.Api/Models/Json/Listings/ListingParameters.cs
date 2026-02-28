@@ -59,7 +59,7 @@ namespace Reddit.Api.Models.Json.Listings
         /// <summary>
         /// Expand subreddits (for search results).
         /// </summary>
-        public bool? ExpandSubreddits { get; set; }
+        public JsonBool ExpandSubreddits { get; set; }
 
         /// <summary>
         /// Geographic region filter.
@@ -69,7 +69,7 @@ namespace Reddit.Api.Models.Json.Listings
         /// <summary>
         /// Include categories in response.
         /// </summary>
-        public bool? IncludeCategories { get; set; }
+        public JsonBool IncludeCategories { get; set; }
 
         /// <summary>
         /// Maximum number of items to return (1-100, default 25).
@@ -79,7 +79,7 @@ namespace Reddit.Api.Models.Json.Listings
         /// <summary>
         /// Show items even if user has voted on them.
         /// </summary>
-        public bool? ShowAll { get; set; }
+        public JsonBool ShowAll { get; set; }
 
         /// <summary>
         /// Subreddit detail level.
@@ -118,7 +118,7 @@ namespace Reddit.Api.Models.Json.Listings
                 parts.Add($"count={Count.Value}");
             }
 
-            if (ShowAll.HasValue && ShowAll.Value)
+            if (ShowAll.IsTrue)
             {
                 parts.Add("show=all");
             }
@@ -133,12 +133,12 @@ namespace Reddit.Api.Models.Json.Listings
                 parts.Add($"g={Uri.EscapeDataString(Geo)}");
             }
 
-            if (ExpandSubreddits.HasValue && ExpandSubreddits.Value)
+            if (ExpandSubreddits.IsTrue)
             {
                 parts.Add("expand_srs=true");
             }
 
-            if (IncludeCategories.HasValue && IncludeCategories.Value)
+            if (IncludeCategories.IsTrue)
             {
                 parts.Add("include_categories=true");
             }

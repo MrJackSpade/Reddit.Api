@@ -9,8 +9,9 @@ namespace Reddit.Api.Models
     [JsonConverter(typeof(JsonDateTimeConverter))]
     public readonly struct JsonDateTime : IEquatable<JsonDateTime>
     {
-        private readonly DateTime _value;
         private readonly JsonDateTimeState _state;
+
+        private readonly DateTime _value;
 
         private JsonDateTime(DateTime value, JsonDateTimeState state)
         {
@@ -18,10 +19,14 @@ namespace Reddit.Api.Models
             _state = state;
         }
 
-        /// <summary>
-        /// Represents a JSON null value.
-        /// </summary>
-        public static JsonDateTime Null => new(default, JsonDateTimeState.Null);
+        private enum JsonDateTimeState : byte
+        {
+            Null = 0,
+
+            Empty = 1,
+
+            HasValue = 2
+        }
 
         /// <summary>
         /// Represents an empty/zero/false value (e.g., 0, "", false).
@@ -29,14 +34,9 @@ namespace Reddit.Api.Models
         public static JsonDateTime Empty => new(default, JsonDateTimeState.Empty);
 
         /// <summary>
-        /// Creates a JsonDateTime with a valid DateTime value.
+        /// Represents a JSON null value.
         /// </summary>
-        public static JsonDateTime FromDateTime(DateTime value) => new(value, JsonDateTimeState.HasValue);
-
-        /// <summary>
-        /// The underlying DateTime value. Only valid when HasValue is true.
-        /// </summary>
-        public DateTime Value => _value;
+        public static JsonDateTime Null => new(default, JsonDateTimeState.Null);
 
         /// <summary>
         /// Returns true if this represents a valid DateTime (not null or empty).
@@ -44,50 +44,24 @@ namespace Reddit.Api.Models
         public bool HasValue => _state == JsonDateTimeState.HasValue;
 
         /// <summary>
-        /// Returns true if this represents a JSON null.
-        /// </summary>
-        public bool IsNull => _state == JsonDateTimeState.Null;
-
-        /// <summary>
         /// Returns true if this represents an empty/zero/false value.
         /// </summary>
         public bool IsEmpty => _state == JsonDateTimeState.Empty;
 
         /// <summary>
-        /// Returns the Value if HasValue is true, otherwise returns null.
+        /// Returns true if this represents a JSON null.
         /// </summary>
-        public DateTime? ToNullable() => HasValue ? _value : null;
+        public bool IsNull => _state == JsonDateTimeState.Null;
 
-        public override string ToString()
-        {
-            return _state switch
-            {
-                JsonDateTimeState.Null => "null",
-                JsonDateTimeState.Empty => "empty",
-                JsonDateTimeState.HasValue => _value.ToString("O"),
-                _ => "unknown"
-            };
-        }
+        /// <summary>
+        /// The underlying DateTime value. Only valid when HasValue is true.
+        /// </summary>
+        public DateTime Value => _value;
 
-        public override bool Equals(object? obj) => obj is JsonDateTime other && Equals(other);
-
-        public bool Equals(JsonDateTime other)
-        {
-            if (_state != other._state)
-            {
-                return false;
-            }
-
-            return _state != JsonDateTimeState.HasValue || _value == other._value;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(_state, _value);
-
-        public static bool operator ==(JsonDateTime left, JsonDateTime right) => left.Equals(right);
-
-        public static bool operator !=(JsonDateTime left, JsonDateTime right) => !left.Equals(right);
-
-        public static implicit operator JsonDateTime(DateTime value) => FromDateTime(value);
+        /// <summary>
+        /// Creates a JsonDateTime with a valid DateTime value.
+        /// </summary>
+        public static JsonDateTime FromDateTime(DateTime value) => new(value, JsonDateTimeState.HasValue);
 
         /// <summary>
         /// Implicit conversion to DateTime. Throws if null or empty.
@@ -107,11 +81,40 @@ namespace Reddit.Api.Models
         /// </summary>
         public static implicit operator DateTime?(JsonDateTime value) => value.HasValue ? value._value : null;
 
-        private enum JsonDateTimeState : byte
+        public static implicit operator JsonDateTime(DateTime value) => FromDateTime(value);
+
+        public static bool operator !=(JsonDateTime left, JsonDateTime right) => !left.Equals(right);
+
+        public static bool operator ==(JsonDateTime left, JsonDateTime right) => left.Equals(right);
+
+        public override bool Equals(object? obj) => obj is JsonDateTime other && this.Equals(other);
+
+        public bool Equals(JsonDateTime other)
         {
-            Null = 0,
-            Empty = 1,
-            HasValue = 2
+            if (_state != other._state)
+            {
+                return false;
+            }
+
+            return _state != JsonDateTimeState.HasValue || _value == other._value;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(_state, _value);
+
+        /// <summary>
+        /// Returns the Value if HasValue is true, otherwise returns null.
+        /// </summary>
+        public DateTime? ToNullable() => HasValue ? _value : null;
+
+        public override string ToString()
+        {
+            return _state switch
+            {
+                JsonDateTimeState.Null => "null",
+                JsonDateTimeState.Empty => "empty",
+                JsonDateTimeState.HasValue => _value.ToString("O"),
+                _ => "unknown"
+            };
         }
     }
 }

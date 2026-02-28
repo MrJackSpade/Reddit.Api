@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -9,7 +10,7 @@ namespace Reddit.Api.Models.Json.Subreddits
     public class Subreddit
     {
         [JsonPropertyName("accept_followers")]
-        public bool? AcceptFollowers { get; set; }
+        public JsonBool AcceptFollowers { get; set; }
 
         [JsonPropertyName("accounts_active")]
         public int? AccountsActive { get; set; }
@@ -21,25 +22,25 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? AdvertiserCategory { get; set; }
 
         [JsonPropertyName("allow_chat_post_creation")]
-        public bool? AllowChatPostCreation { get; set; }
+        public JsonBool AllowChatPostCreation { get; set; }
 
         [JsonPropertyName("allow_galleries")]
-        public bool? AllowGalleries { get; set; }
+        public JsonBool AllowGalleries { get; set; }
 
         [JsonPropertyName("allow_images")]
         public bool AllowImages { get; set; }
 
         [JsonPropertyName("allow_polls")]
-        public bool? AllowPolls { get; set; }
+        public JsonBool AllowPolls { get; set; }
 
         [JsonPropertyName("allow_predictions")]
-        public bool? AllowPredictions { get; set; }
+        public JsonBool AllowPredictions { get; set; }
 
         [JsonPropertyName("allow_predictions_tournament")]
-        public bool? AllowPredictionsTournament { get; set; }
+        public JsonBool AllowPredictionsTournament { get; set; }
 
         [JsonPropertyName("allow_talks")]
-        public bool? AllowTalks { get; set; }
+        public JsonBool AllowTalks { get; set; }
 
         [JsonPropertyName("allow_videogifs")]
         public bool AllowVideogifs { get; set; }
@@ -60,13 +61,13 @@ namespace Reddit.Api.Models.Json.Subreddits
         public List<int>? BannerSize { get; set; }
 
         [JsonPropertyName("can_assign_link_flair")]
-        public bool? CanAssignLinkFlair { get; set; }
+        public JsonBool CanAssignLinkFlair { get; set; }
 
         [JsonPropertyName("can_assign_user_flair")]
-        public bool? CanAssignUserFlair { get; set; }
+        public JsonBool CanAssignUserFlair { get; set; }
 
         [JsonPropertyName("collapse_deleted_comments")]
-        public bool? CollapseDeletedComments { get; set; }
+        public JsonBool CollapseDeletedComments { get; set; }
 
         [JsonPropertyName("comment_score_hide_mins")]
         public int? CommentScoreHideMins { get; set; }
@@ -81,13 +82,15 @@ namespace Reddit.Api.Models.Json.Subreddits
         public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("description")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Description { get; set; }
 
         [JsonPropertyName("description_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? DescriptionHtml { get; set; }
 
         [JsonPropertyName("disable_contributor_requests")]
-        public bool? DisableContributorRequests { get; set; }
+        public JsonBool DisableContributorRequests { get; set; }
 
         [JsonPropertyName("display_name")]
         public string DisplayName { get; set; } = string.Empty;
@@ -126,10 +129,10 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("is_chat_post_feature_enabled")]
-        public bool? IsChatPostFeatureEnabled { get; set; }
+        public JsonBool IsChatPostFeatureEnabled { get; set; }
 
         [JsonPropertyName("is_crosspostable_subreddit")]
-        public bool? IsCrosspostableSubreddit { get; set; }
+        public JsonBool IsCrosspostableSubreddit { get; set; }
 
         [JsonPropertyName("key_color")]
         public JsonColor KeyColor { get; set; }
@@ -162,13 +165,15 @@ namespace Reddit.Api.Models.Json.Subreddits
         public JsonColor PrimaryColor { get; set; }
 
         [JsonPropertyName("public_description")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? PublicDescription { get; set; }
 
         [JsonPropertyName("public_description_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? PublicDescriptionHtml { get; set; }
 
         [JsonPropertyName("public_traffic")]
-        public bool? PublicTraffic { get; set; }
+        public JsonBool PublicTraffic { get; set; }
 
         [JsonPropertyName("quarantine")]
         public bool Quarantine { get; set; }
@@ -192,9 +197,11 @@ namespace Reddit.Api.Models.Json.Subreddits
         public SubmissionType SubmissionType { get; set; }
 
         [JsonPropertyName("submit_text")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? SubmitText { get; set; }
 
         [JsonPropertyName("submit_text_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? SubmitTextHtml { get; set; }
 
         [JsonPropertyName("subreddit_type")]
@@ -219,7 +226,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? UserFlairCssClass { get; set; }
 
         [JsonPropertyName("user_flair_enabled_in_sr")]
-        public bool? UserFlairEnabledInSr { get; set; }
+        public JsonBool UserFlairEnabledInSr { get; set; }
 
         [JsonPropertyName("user_flair_position")]
         public FlairPosition UserFlairPosition { get; set; }
@@ -240,28 +247,28 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? UserFlairType { get; set; }
 
         [JsonPropertyName("user_has_favorited")]
-        public bool? UserHasFavorited { get; set; }
+        public JsonBool UserHasFavorited { get; set; }
 
         [JsonPropertyName("user_is_banned")]
-        public bool? UserIsBanned { get; set; }
+        public JsonBool UserIsBanned { get; set; }
 
         [JsonPropertyName("user_is_contributor")]
-        public bool? UserIsContributor { get; set; }
+        public JsonBool UserIsContributor { get; set; }
 
         [JsonPropertyName("user_is_moderator")]
-        public bool? UserIsModerator { get; set; }
+        public JsonBool UserIsModerator { get; set; }
 
         [JsonPropertyName("user_is_muted")]
-        public bool? UserIsMuted { get; set; }
+        public JsonBool UserIsMuted { get; set; }
 
         [JsonPropertyName("user_is_subscriber")]
-        public bool? UserIsSubscriber { get; set; }
+        public JsonBool UserIsSubscriber { get; set; }
 
         [JsonPropertyName("whitelist_status")]
         public string? WhitelistStatus { get; set; }
 
         [JsonPropertyName("wiki_enabled")]
-        public bool? WikiEnabled { get; set; }
+        public JsonBool WikiEnabled { get; set; }
 
         [JsonPropertyName("wls")]
         public int? Wls { get; set; }

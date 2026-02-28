@@ -20,12 +20,12 @@ namespace Reddit.Api.Models.Json.Search
         /// <summary>
         /// Include facets in response.
         /// </summary>
-        public bool? IncludeFacets { get; set; }
+        public JsonBool IncludeFacets { get; set; }
 
         /// <summary>
         /// Include over 18 content.
         /// </summary>
-        public bool? IncludeOver18 { get; set; }
+        public JsonBool IncludeOver18 { get; set; }
 
         /// <summary>
         /// Number of results (1-100).
@@ -40,7 +40,7 @@ namespace Reddit.Api.Models.Json.Search
         /// <summary>
         /// Restrict to safe content.
         /// </summary>
-        public bool? RestrictSr { get; set; }
+        public JsonBool RestrictSr { get; set; }
 
         /// <summary>
         /// Sort order: relevance, hot, top, new, comments.
@@ -102,19 +102,19 @@ namespace Reddit.Api.Models.Json.Search
                 parts.Add($"limit={Limit.Value}");
             }
 
-            if (RestrictSr.HasValue)
+            if (!RestrictSr.IsNull)
             {
-                parts.Add($"restrict_sr={RestrictSr.Value.ToString().ToLower()}");
+                parts.Add($"restrict_sr={RestrictSr.ToString()}");
             }
 
-            if (IncludeFacets.HasValue)
+            if (!IncludeFacets.IsNull)
             {
-                parts.Add($"include_facets={IncludeFacets.Value.ToString().ToLower()}");
+                parts.Add($"include_facets={IncludeFacets.ToString()}");
             }
 
-            if (IncludeOver18.HasValue)
+            if (!IncludeOver18.IsNull)
             {
-                parts.Add($"include_over_18={IncludeOver18.Value.ToString().ToLower()}");
+                parts.Add($"include_over_18={IncludeOver18.ToString()}");
             }
 
             return "?" + string.Join("&", parts);

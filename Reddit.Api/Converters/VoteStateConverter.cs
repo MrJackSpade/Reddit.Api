@@ -36,9 +36,11 @@ namespace Reddit.Api.Converters
                 case VoteState.Upvote:
                     writer.WriteBooleanValue(true);
                     break;
+
                 case VoteState.Downvote:
                     writer.WriteBooleanValue(false);
                     break;
+
                 default:
                     writer.WriteNullValue();
                     break;

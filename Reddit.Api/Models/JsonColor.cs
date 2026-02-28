@@ -9,8 +9,9 @@ namespace Reddit.Api.Models
     [JsonConverter(typeof(JsonColorConverter))]
     public readonly struct JsonColor : IEquatable<JsonColor>
     {
-        private readonly string? _value;
         private readonly JsonColorState _state;
+
+        private readonly string? _value;
 
         private JsonColor(string? value, JsonColorState state)
         {
@@ -18,10 +19,14 @@ namespace Reddit.Api.Models
             _state = state;
         }
 
-        /// <summary>
-        /// Represents a JSON null value.
-        /// </summary>
-        public static JsonColor Null => new(null, JsonColorState.Null);
+        private enum JsonColorState : byte
+        {
+            Null = 0,
+
+            Empty = 1,
+
+            HasValue = 2
+        }
 
         /// <summary>
         /// Represents an empty string value.
@@ -29,14 +34,9 @@ namespace Reddit.Api.Models
         public static JsonColor Empty => new(string.Empty, JsonColorState.Empty);
 
         /// <summary>
-        /// Creates a JsonColor with a valid color value.
+        /// Represents a JSON null value.
         /// </summary>
-        public static JsonColor FromString(string value) => new(value, JsonColorState.HasValue);
-
-        /// <summary>
-        /// The underlying color value. Only valid when HasValue is true.
-        /// </summary>
-        public string Value => _value ?? string.Empty;
+        public static JsonColor Null => new(null, JsonColorState.Null);
 
         /// <summary>
         /// Returns true if this represents a valid color (not null or empty).
@@ -44,38 +44,30 @@ namespace Reddit.Api.Models
         public bool HasValue => _state == JsonColorState.HasValue;
 
         /// <summary>
-        /// Returns true if this represents a JSON null.
-        /// </summary>
-        public bool IsNull => _state == JsonColorState.Null;
-
-        /// <summary>
         /// Returns true if this represents an empty string.
         /// </summary>
         public bool IsEmpty => _state == JsonColorState.Empty;
 
         /// <summary>
-        /// Returns the Value if HasValue is true, otherwise returns null.
+        /// Returns true if this represents a JSON null.
         /// </summary>
-        public string? ToNullableString() => HasValue ? _value : null;
+        public bool IsNull => _state == JsonColorState.Null;
 
         /// <summary>
-        /// Returns the color as a hex string, or null if not a valid color.
-        /// Use this instead of the null-conditional operator since JsonColor is a struct.
+        /// The underlying color value. Only valid when HasValue is true.
         /// </summary>
-        public string? ToHex() => HasValue ? _value : null;
+        public string Value => _value ?? string.Empty;
 
-        public override string ToString()
-        {
-            return _state switch
-            {
-                JsonColorState.Null => "null",
-                JsonColorState.Empty => "empty",
-                JsonColorState.HasValue => _value ?? string.Empty,
-                _ => "unknown"
-            };
-        }
+        /// <summary>
+        /// Creates a JsonColor with a valid color value.
+        /// </summary>
+        public static JsonColor FromString(string value) => new(value, JsonColorState.HasValue);
 
-        public override bool Equals(object? obj) => obj is JsonColor other && Equals(other);
+        public static bool operator !=(JsonColor left, JsonColor right) => !left.Equals(right);
+
+        public static bool operator ==(JsonColor left, JsonColor right) => left.Equals(right);
+
+        public override bool Equals(object? obj) => obj is JsonColor other && this.Equals(other);
 
         public bool Equals(JsonColor other)
         {
@@ -89,15 +81,26 @@ namespace Reddit.Api.Models
 
         public override int GetHashCode() => HashCode.Combine(_state, _value);
 
-        public static bool operator ==(JsonColor left, JsonColor right) => left.Equals(right);
+        /// <summary>
+        /// Returns the color as a hex string, or null if not a valid color.
+        /// Use this instead of the null-conditional operator since JsonColor is a struct.
+        /// </summary>
+        public string? ToHex() => HasValue ? _value : null;
 
-        public static bool operator !=(JsonColor left, JsonColor right) => !left.Equals(right);
+        /// <summary>
+        /// Returns the Value if HasValue is true, otherwise returns null.
+        /// </summary>
+        public string? ToNullableString() => HasValue ? _value : null;
 
-        private enum JsonColorState : byte
+        public override string ToString()
         {
-            Null = 0,
-            Empty = 1,
-            HasValue = 2
+            return _state switch
+            {
+                JsonColorState.Null => "null",
+                JsonColorState.Empty => "empty",
+                JsonColorState.HasValue => _value ?? string.Empty,
+                _ => "unknown"
+            };
         }
     }
 }

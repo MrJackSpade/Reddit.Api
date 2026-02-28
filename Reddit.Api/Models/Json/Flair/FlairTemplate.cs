@@ -28,7 +28,7 @@ namespace Reddit.Api.Models.Json.Flair
         public bool ModOnly { get; set; }
 
         [JsonPropertyName("override_css")]
-        public bool? OverrideCss { get; set; }
+        public JsonBool OverrideCss { get; set; }
 
         [JsonPropertyName("richtext")]
         public List<FlairRichtext>? Richtext { get; set; }

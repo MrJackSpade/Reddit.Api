@@ -45,17 +45,17 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Mark as NSFW.
         /// </summary>
-        public bool? Nsfw { get; set; }
+        public JsonBool Nsfw { get; set; }
 
         /// <summary>
         /// Mark as original content.
         /// </summary>
-        public bool? OriginalContent { get; set; }
+        public JsonBool OriginalContent { get; set; }
 
         /// <summary>
         /// Resubmit if URL has already been posted.
         /// </summary>
-        public bool? Resubmit { get; set; }
+        public JsonBool Resubmit { get; set; }
 
         /// <summary>
         /// The richtext_json (optional for RTE).
@@ -70,7 +70,7 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Mark as spoiler.
         /// </summary>
-        public bool? Spoiler { get; set; }
+        public JsonBool Spoiler { get; set; }
 
         /// <summary>
         /// Subreddit name (without r/ prefix).

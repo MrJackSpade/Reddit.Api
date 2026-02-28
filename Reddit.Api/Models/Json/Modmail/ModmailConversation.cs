@@ -27,7 +27,7 @@ namespace Reddit.Api.Models.Json.Modmail
         /// <summary>
         /// Whether this is an internal mod discussion.
         /// </summary>
-        public bool? IsAuthorHidden { get; set; }
+        public JsonBool IsAuthorHidden { get; set; }
 
         /// <summary>
         /// Subject line.

@@ -9,13 +9,13 @@ namespace Reddit.Api.Models.Json.Users
     public class User
     {
         [JsonPropertyName("accept_chats")]
-        public bool? AcceptChats { get; set; }
+        public JsonBool AcceptChats { get; set; }
 
         [JsonPropertyName("accept_followers")]
-        public bool? AcceptFollowers { get; set; }
+        public JsonBool AcceptFollowers { get; set; }
 
         [JsonPropertyName("accept_pms")]
-        public bool? AcceptPms { get; set; }
+        public JsonBool AcceptPms { get; set; }
 
         [JsonPropertyName("awardee_karma")]
         public int? AwardeeKarma { get; set; }
@@ -33,10 +33,10 @@ namespace Reddit.Api.Models.Json.Users
         public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("has_subscribed")]
-        public bool? HasSubscribed { get; set; }
+        public JsonBool HasSubscribed { get; set; }
 
         [JsonPropertyName("has_verified_email")]
-        public bool? HasVerifiedEmail { get; set; }
+        public JsonBool HasVerifiedEmail { get; set; }
 
         [JsonPropertyName("hide_from_robots")]
         public bool HideFromRobots { get; set; }
@@ -48,13 +48,13 @@ namespace Reddit.Api.Models.Json.Users
         public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("is_blocked")]
-        public bool? IsBlocked { get; set; }
+        public JsonBool IsBlocked { get; set; }
 
         [JsonPropertyName("is_employee")]
         public bool IsEmployee { get; set; }
 
         [JsonPropertyName("is_friend")]
-        public bool? IsFriend { get; set; }
+        public JsonBool IsFriend { get; set; }
 
         [JsonPropertyName("is_gold")]
         public bool IsGold { get; set; }
@@ -63,7 +63,7 @@ namespace Reddit.Api.Models.Json.Users
         public bool IsMod { get; set; }
 
         [JsonPropertyName("is_suspended")]
-        public bool? IsSuspended { get; set; }
+        public JsonBool IsSuspended { get; set; }
 
         [JsonPropertyName("link_karma")]
         public int LinkKarma { get; set; }
@@ -72,7 +72,7 @@ namespace Reddit.Api.Models.Json.Users
         public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("pref_show_snoovatar")]
-        public bool? PrefShowSnoovatar { get; set; }
+        public JsonBool PrefShowSnoovatar { get; set; }
 
         [JsonPropertyName("snoovatar_img")]
         public string? SnoovatarImg { get; set; }
@@ -96,7 +96,7 @@ namespace Reddit.Api.Models.Json.Users
     public class UserSubreddit
     {
         [JsonPropertyName("accept_followers")]
-        public bool? AcceptFollowers { get; set; }
+        public JsonBool AcceptFollowers { get; set; }
 
         [JsonPropertyName("banner_img")]
         public string? BannerImg { get; set; }
@@ -111,7 +111,7 @@ namespace Reddit.Api.Models.Json.Users
         public string? DisplayNamePrefixed { get; set; }
 
         [JsonPropertyName("free_form_reports")]
-        public bool? FreeFormReports { get; set; }
+        public JsonBool FreeFormReports { get; set; }
 
         [JsonPropertyName("icon_img")]
         public string? IconImg { get; set; }
@@ -120,10 +120,10 @@ namespace Reddit.Api.Models.Json.Users
         public List<int>? IconSize { get; set; }
 
         [JsonPropertyName("is_default_banner")]
-        public bool? IsDefaultBanner { get; set; }
+        public JsonBool IsDefaultBanner { get; set; }
 
         [JsonPropertyName("is_default_icon")]
-        public bool? IsDefaultIcon { get; set; }
+        public JsonBool IsDefaultIcon { get; set; }
 
         [JsonPropertyName("key_color")]
         public JsonColor KeyColor { get; set; }
@@ -132,7 +132,7 @@ namespace Reddit.Api.Models.Json.Users
         public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("over_18")]
-        public bool? Over18 { get; set; }
+        public JsonBool Over18 { get; set; }
 
         [JsonPropertyName("primary_color")]
         public JsonColor PrimaryColor { get; set; }
@@ -153,6 +153,6 @@ namespace Reddit.Api.Models.Json.Users
         public string? Url { get; set; }
 
         [JsonPropertyName("user_is_subscriber")]
-        public bool? UserIsSubscriber { get; set; }
+        public JsonBool UserIsSubscriber { get; set; }
     }
 }

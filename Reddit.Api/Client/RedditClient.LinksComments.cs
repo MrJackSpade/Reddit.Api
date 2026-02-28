@@ -320,19 +320,19 @@ namespace Reddit.Api.Client
                 formData["url"] = request.Url;
             }
 
-            if (request.Nsfw.HasValue)
+            if (!request.Nsfw.IsNull)
             {
-                formData["nsfw"] = request.Nsfw.Value.ToString().ToLower();
+                formData["nsfw"] = request.Nsfw.ToString();
             }
 
-            if (request.Spoiler.HasValue)
+            if (!request.Spoiler.IsNull)
             {
-                formData["spoiler"] = request.Spoiler.Value.ToString().ToLower();
+                formData["spoiler"] = request.Spoiler.ToString();
             }
 
-            if (request.Resubmit.HasValue)
+            if (!request.Resubmit.IsNull)
             {
-                formData["resubmit"] = request.Resubmit.Value.ToString().ToLower();
+                formData["resubmit"] = request.Resubmit.ToString();
             }
 
             if (!string.IsNullOrEmpty(request.FlairId))

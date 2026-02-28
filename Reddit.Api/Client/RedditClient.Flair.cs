@@ -38,14 +38,14 @@ namespace Reddit.Api.Client
                 formData["background_color"] = request.BackgroundColor.Value;
             }
 
-            if (request.TextEditable.HasValue)
+            if (!request.TextEditable.IsNull)
             {
-                formData["text_editable"] = request.TextEditable.Value.ToString().ToLower();
+                formData["text_editable"] = request.TextEditable.ToString();
             }
 
-            if (request.ModOnly.HasValue)
+            if (!request.ModOnly.IsNull)
             {
-                formData["mod_only"] = request.ModOnly.Value.ToString().ToLower();
+                formData["mod_only"] = request.ModOnly.ToString();
             }
 
             if (!string.IsNullOrEmpty(request.AllowableContent))
@@ -58,9 +58,9 @@ namespace Reddit.Api.Client
                 formData["max_emojis"] = request.MaxEmojis.Value.ToString();
             }
 
-            if (request.OverrideCss.HasValue)
+            if (!request.OverrideCss.IsNull)
             {
-                formData["override_css"] = request.OverrideCss.Value.ToString().ToLower();
+                formData["override_css"] = request.OverrideCss.ToString();
             }
 
             ApiResponse<FlairTemplate>? response = await this.PostFormAsync<ApiResponse<FlairTemplate>>($"/r/{subreddit}/api/flairtemplate_v2", formData, cancellationToken);

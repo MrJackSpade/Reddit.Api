@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using Reddit.Api.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.LinksComments
 {

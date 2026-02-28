@@ -23,7 +23,7 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Whether to return only the immediate children.
         /// </summary>
-        public bool? LimitChildren { get; set; }
+        public JsonBool LimitChildren { get; set; }
 
         /// <summary>
         /// Fullname of the link (post).

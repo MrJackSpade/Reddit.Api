@@ -1,4 +1,3 @@
-using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -14,22 +13,22 @@ namespace Reddit.Api.Models.Json.Account
         public AcceptPms? AcceptPms { get; set; }
 
         [JsonPropertyName("activity_relevant_ads")]
-        public bool? ActivityRelevantAds { get; set; }
+        public JsonBool ActivityRelevantAds { get; set; }
 
         [JsonPropertyName("allow_clicktracking")]
-        public bool? AllowClicktracking { get; set; }
+        public JsonBool AllowClicktracking { get; set; }
 
         [JsonPropertyName("beta")]
-        public bool? Beta { get; set; }
+        public JsonBool Beta { get; set; }
 
         [JsonPropertyName("clickgadget")]
-        public bool? Clickgadget { get; set; }
+        public JsonBool Clickgadget { get; set; }
 
         [JsonPropertyName("collapse_read_messages")]
-        public bool? CollapseReadMessages { get; set; }
+        public JsonBool CollapseReadMessages { get; set; }
 
         [JsonPropertyName("compress")]
-        public bool? Compress { get; set; }
+        public JsonBool Compress { get; set; }
 
         [JsonPropertyName("country_code")]
         public string? CountryCode { get; set; }
@@ -38,91 +37,91 @@ namespace Reddit.Api.Models.Json.Account
         public string? DefaultCommentSort { get; set; }
 
         [JsonPropertyName("domain_details")]
-        public bool? DomainDetails { get; set; }
+        public JsonBool DomainDetails { get; set; }
 
         [JsonPropertyName("email_chat_request")]
-        public bool? EmailChatRequest { get; set; }
+        public JsonBool EmailChatRequest { get; set; }
 
         [JsonPropertyName("email_comment_reply")]
-        public bool? EmailCommentReply { get; set; }
+        public JsonBool EmailCommentReply { get; set; }
 
         [JsonPropertyName("email_digests")]
-        public bool? EmailDigests { get; set; }
+        public JsonBool EmailDigests { get; set; }
 
         [JsonPropertyName("email_messages")]
-        public bool? EmailMessages { get; set; }
+        public JsonBool EmailMessages { get; set; }
 
         [JsonPropertyName("email_post_reply")]
-        public bool? EmailPostReply { get; set; }
+        public JsonBool EmailPostReply { get; set; }
 
         [JsonPropertyName("email_private_message")]
-        public bool? EmailPrivateMessage { get; set; }
+        public JsonBool EmailPrivateMessage { get; set; }
 
         [JsonPropertyName("email_unsubscribe_all")]
-        public bool? EmailUnsubscribeAll { get; set; }
+        public JsonBool EmailUnsubscribeAll { get; set; }
 
         [JsonPropertyName("email_upvote_comment")]
-        public bool? EmailUpvoteComment { get; set; }
+        public JsonBool EmailUpvoteComment { get; set; }
 
         [JsonPropertyName("email_upvote_post")]
-        public bool? EmailUpvotePost { get; set; }
+        public JsonBool EmailUpvotePost { get; set; }
 
         [JsonPropertyName("email_username_mention")]
-        public bool? EmailUsernameMention { get; set; }
+        public JsonBool EmailUsernameMention { get; set; }
 
         [JsonPropertyName("email_user_new_follower")]
-        public bool? EmailUserNewFollower { get; set; }
+        public JsonBool EmailUserNewFollower { get; set; }
 
         [JsonPropertyName("enable_default_themes")]
-        public bool? EnableDefaultThemes { get; set; }
+        public JsonBool EnableDefaultThemes { get; set; }
 
         [JsonPropertyName("enable_followers")]
-        public bool? EnableFollowers { get; set; }
+        public JsonBool EnableFollowers { get; set; }
 
         [JsonPropertyName("feed_recommendations_enabled")]
-        public bool? FeedRecommendationsEnabled { get; set; }
+        public JsonBool FeedRecommendationsEnabled { get; set; }
 
         [JsonPropertyName("geopopular")]
         public string? Geopopular { get; set; }
 
         [JsonPropertyName("hide_ads")]
-        public bool? HideAds { get; set; }
+        public JsonBool HideAds { get; set; }
 
         [JsonPropertyName("hide_downs")]
-        public bool? HideDowns { get; set; }
+        public JsonBool HideDowns { get; set; }
 
         [JsonPropertyName("hide_from_robots")]
-        public bool? HideFromRobots { get; set; }
+        public JsonBool HideFromRobots { get; set; }
 
         [JsonPropertyName("hide_ups")]
-        public bool? HideUps { get; set; }
+        public JsonBool HideUps { get; set; }
 
         [JsonPropertyName("highlight_controversial")]
-        public bool? HighlightControversial { get; set; }
+        public JsonBool HighlightControversial { get; set; }
 
         [JsonPropertyName("highlight_new_comments")]
-        public bool? HighlightNewComments { get; set; }
+        public JsonBool HighlightNewComments { get; set; }
 
         [JsonPropertyName("ignore_suggested_sort")]
-        public bool? IgnoreSuggestedSort { get; set; }
+        public JsonBool IgnoreSuggestedSort { get; set; }
 
         [JsonPropertyName("in_redesign_beta")]
-        public bool? InRedesignBeta { get; set; }
+        public JsonBool InRedesignBeta { get; set; }
 
         [JsonPropertyName("label_nsfw")]
-        public bool? LabelNsfw { get; set; }
+        public JsonBool LabelNsfw { get; set; }
 
         [JsonPropertyName("lang")]
         public string? Lang { get; set; }
 
         [JsonPropertyName("legacy_search")]
-        public bool? LegacySearch { get; set; }
+        public JsonBool LegacySearch { get; set; }
 
         [JsonPropertyName("live_orangereds")]
-        public bool? LiveOrangereds { get; set; }
+        public JsonBool LiveOrangereds { get; set; }
 
         [JsonPropertyName("mark_messages_read")]
-        public bool? MarkMessagesRead { get; set; }
+        public JsonBool MarkMessagesRead { get; set; }
 
         [JsonPropertyName("media")]
         public string? Media { get; set; }
@@ -137,16 +136,16 @@ namespace Reddit.Api.Models.Json.Account
         public int? MinLinkScore { get; set; }
 
         [JsonPropertyName("monitor_mentions")]
-        public bool? MonitorMentions { get; set; }
+        public JsonBool MonitorMentions { get; set; }
 
         [JsonPropertyName("newwindow")]
-        public bool? Newwindow { get; set; }
+        public JsonBool Newwindow { get; set; }
 
         [JsonPropertyName("nightmode")]
-        public bool? Nightmode { get; set; }
+        public JsonBool Nightmode { get; set; }
 
         [JsonPropertyName("no_profanity")]
-        public bool? NoProfanity { get; set; }
+        public JsonBool NoProfanity { get; set; }
 
         [JsonPropertyName("num_comments")]
         public int? NumComments { get; set; }
@@ -155,64 +154,64 @@ namespace Reddit.Api.Models.Json.Account
         public int? Numsites { get; set; }
 
         [JsonPropertyName("organic")]
-        public bool? Organic { get; set; }
+        public JsonBool Organic { get; set; }
 
         [JsonPropertyName("other_theme")]
         public string? OtherTheme { get; set; }
 
         [JsonPropertyName("over_18")]
-        public bool? Over18 { get; set; }
+        public JsonBool Over18 { get; set; }
 
         [JsonPropertyName("private_feeds")]
-        public bool? PrivateFeeds { get; set; }
+        public JsonBool PrivateFeeds { get; set; }
 
         [JsonPropertyName("profile_opt_out")]
-        public bool? ProfileOptOut { get; set; }
+        public JsonBool ProfileOptOut { get; set; }
 
         [JsonPropertyName("public_votes")]
-        public bool? PublicVotes { get; set; }
+        public JsonBool PublicVotes { get; set; }
 
         [JsonPropertyName("research")]
-        public bool? Research { get; set; }
+        public JsonBool Research { get; set; }
 
         [JsonPropertyName("search_include_over_18")]
-        public bool? SearchIncludeOver18 { get; set; }
+        public JsonBool SearchIncludeOver18 { get; set; }
 
         [JsonPropertyName("send_crosspost_messages")]
-        public bool? SendCrosspostMessages { get; set; }
+        public JsonBool SendCrosspostMessages { get; set; }
 
         [JsonPropertyName("send_welcome_messages")]
-        public bool? SendWelcomeMessages { get; set; }
+        public JsonBool SendWelcomeMessages { get; set; }
 
         [JsonPropertyName("show_flair")]
-        public bool? ShowFlair { get; set; }
+        public JsonBool ShowFlair { get; set; }
 
         [JsonPropertyName("show_gold_expiration")]
-        public bool? ShowGoldExpiration { get; set; }
+        public JsonBool ShowGoldExpiration { get; set; }
 
         [JsonPropertyName("show_link_flair")]
-        public bool? ShowLinkFlair { get; set; }
+        public JsonBool ShowLinkFlair { get; set; }
 
         [JsonPropertyName("show_location_based_recommendations")]
-        public bool? ShowLocationBasedRecommendations { get; set; }
+        public JsonBool ShowLocationBasedRecommendations { get; set; }
 
         [JsonPropertyName("show_presence")]
-        public bool? ShowPresence { get; set; }
+        public JsonBool ShowPresence { get; set; }
 
         [JsonPropertyName("show_promote")]
-        public bool? ShowPromote { get; set; }
+        public JsonBool ShowPromote { get; set; }
 
         [JsonPropertyName("show_stylesheets")]
-        public bool? ShowStylesheets { get; set; }
+        public JsonBool ShowStylesheets { get; set; }
 
         [JsonPropertyName("show_trending")]
-        public bool? ShowTrending { get; set; }
+        public JsonBool ShowTrending { get; set; }
 
         [JsonPropertyName("show_twitter")]
-        public bool? ShowTwitter { get; set; }
+        public JsonBool ShowTwitter { get; set; }
 
         [JsonPropertyName("store_visits")]
-        public bool? StoreVisits { get; set; }
+        public JsonBool StoreVisits { get; set; }
 
         [JsonPropertyName("survey_last_seen_time")]
         public long? SurveyLastSeenTime { get; set; }
@@ -221,30 +220,30 @@ namespace Reddit.Api.Models.Json.Account
         public string? ThemeSelector { get; set; }
 
         [JsonPropertyName("third_party_data_personalized_ads")]
-        public bool? ThirdPartyDataPersonalizedAds { get; set; }
+        public JsonBool ThirdPartyDataPersonalizedAds { get; set; }
 
         [JsonPropertyName("third_party_personalized_ads")]
-        public bool? ThirdPartyPersonalizedAds { get; set; }
+        public JsonBool ThirdPartyPersonalizedAds { get; set; }
 
         [JsonPropertyName("third_party_site_data_personalized_ads")]
-        public bool? ThirdPartySiteDataPersonalizedAds { get; set; }
+        public JsonBool ThirdPartySiteDataPersonalizedAds { get; set; }
 
         [JsonPropertyName("third_party_site_data_personalized_content")]
-        public bool? ThirdPartySiteDataPersonalizedContent { get; set; }
+        public JsonBool ThirdPartySiteDataPersonalizedContent { get; set; }
 
         [JsonPropertyName("threaded_messages")]
-        public bool? ThreadedMessages { get; set; }
+        public JsonBool ThreadedMessages { get; set; }
 
         [JsonPropertyName("threaded_modmail")]
-        public bool? ThreadedModmail { get; set; }
+        public JsonBool ThreadedModmail { get; set; }
 
         [JsonPropertyName("top_karma_subreddits")]
-        public bool? TopKarmaSubreddits { get; set; }
+        public JsonBool TopKarmaSubreddits { get; set; }
 
         [JsonPropertyName("use_global_defaults")]
-        public bool? UseGlobalDefaults { get; set; }
+        public JsonBool UseGlobalDefaults { get; set; }
 
         [JsonPropertyName("video_autoplay")]
-        public bool? VideoAutoplay { get; set; }
+        public JsonBool VideoAutoplay { get; set; }
     }
 }

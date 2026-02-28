@@ -18,7 +18,7 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Whether this is a modmail conversation.
         /// </summary>
-        public bool? ModmailConvId { get; set; }
+        public JsonBool ModmailConvId { get; set; }
 
         /// <summary>
         /// Additional information about the report.
@@ -43,7 +43,7 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Whether to use strict JSON mode.
         /// </summary>
-        public bool? StrictJsonParsing { get; set; }
+        public JsonBool StrictJsonParsing { get; set; }
 
         /// <summary>
         /// Fullname of the thing to report.
@@ -53,6 +53,6 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// <summary>
         /// Whether to use user-based rules.
         /// </summary>
-        public bool? UserBasedHateSpeech { get; set; }
+        public JsonBool UserBasedHateSpeech { get; set; }
     }
 }

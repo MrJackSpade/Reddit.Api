@@ -15,7 +15,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         /// <summary>
         /// Skip the initial frontpage for new users.
         /// </summary>
-        public bool? SkipInitialDefaults { get; set; }
+        public JsonBool SkipInitialDefaults { get; set; }
 
         /// <summary>
         /// Fullname (t5_xxx) or display name of the subreddit.

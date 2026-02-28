@@ -40,12 +40,12 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Whether only mods can use this flair.
         /// </summary>
-        public bool? ModOnly { get; set; }
+        public JsonBool ModOnly { get; set; }
 
         /// <summary>
         /// Override CSS with new colors.
         /// </summary>
-        public bool? OverrideCss { get; set; }
+        public JsonBool OverrideCss { get; set; }
 
         /// <summary>
         /// Flair text.
@@ -60,7 +60,7 @@ namespace Reddit.Api.Models.Json.Flair
         /// <summary>
         /// Whether text is editable by users.
         /// </summary>
-        public bool? TextEditable { get; set; }
+        public JsonBool TextEditable { get; set; }
     }
 
     /// <summary>

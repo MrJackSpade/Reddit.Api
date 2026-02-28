@@ -44,9 +44,9 @@ namespace Reddit.Api.Client
                 formData["resources"] = request.Resources;
             }
 
-            if (request.Nsfw.HasValue)
+            if (!request.Nsfw.IsNull)
             {
-                formData["nsfw"] = request.Nsfw.Value.ToString().ToLower();
+                formData["nsfw"] = request.Nsfw.ToString();
             }
 
             ApiResponse<LiveThreadCreateData>? response = await this.PostFormAsync<ApiResponse<LiveThreadCreateData>>("/api/live/create", formData, cancellationToken);

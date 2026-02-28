@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Models.Json.Multis
@@ -20,9 +21,11 @@ namespace Reddit.Api.Models.Json.Multis
         public JsonDateTime CreatedUtc { get; set; }
 
         [JsonPropertyName("description_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? DescriptionHtml { get; set; }
 
         [JsonPropertyName("description_md")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? DescriptionMd { get; set; }
 
         [JsonPropertyName("display_name")]
@@ -32,10 +35,10 @@ namespace Reddit.Api.Models.Json.Multis
         public string? IconUrl { get; set; }
 
         [JsonPropertyName("is_favorited")]
-        public bool? IsFavorited { get; set; }
+        public JsonBool IsFavorited { get; set; }
 
         [JsonPropertyName("is_subscriber")]
-        public bool? IsSubscriber { get; set; }
+        public JsonBool IsSubscriber { get; set; }
 
         [JsonPropertyName("key_color")]
         public JsonColor KeyColor { get; set; }

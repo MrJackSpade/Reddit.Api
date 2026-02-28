@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -54,9 +55,11 @@ namespace Reddit.Api.Models.Json.Listings
         public string? BannedBy { get; set; }
 
         [JsonPropertyName("body")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string Body { get; set; } = string.Empty;
 
         [JsonPropertyName("body_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? BodyHtml { get; set; }
 
         [JsonPropertyName("can_gild")]
@@ -72,13 +75,13 @@ namespace Reddit.Api.Models.Json.Listings
         public bool Collapsed { get; set; }
 
         [JsonPropertyName("collapsed_because_crowd_control")]
-        public bool? CollapsedBecauseCrowdControl { get; set; }
+        public JsonBool CollapsedBecauseCrowdControl { get; set; }
 
         [JsonPropertyName("collapsed_reason")]
         public string? CollapsedReason { get; set; }
 
         [JsonPropertyName("collapsed_reason_code")]
-        public CollapsedReasonCode? CollapsedReasonCode { get; set; }
+        public CollapsedReasonCode CollapsedReasonCode { get; set; }
 
         [JsonPropertyName("controversiality")]
         public int Controversiality { get; set; }
@@ -96,7 +99,7 @@ namespace Reddit.Api.Models.Json.Listings
         public int Depth { get; set; }
 
         [JsonPropertyName("distinguished")]
-        public DistinguishedKind? Distinguished { get; set; }
+        public DistinguishedKind Distinguished { get; set; }
 
         [JsonPropertyName("downs")]
         public int Downs { get; set; }
@@ -192,7 +195,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool SendReplies { get; set; }
 
         [JsonPropertyName("spam")]
-        public bool? Spam { get; set; }
+        public JsonBool Spam { get; set; }
 
         // Can be bool false or timestamp
         [JsonPropertyName("stickied")]

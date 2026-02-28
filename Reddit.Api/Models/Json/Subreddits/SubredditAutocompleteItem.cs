@@ -25,7 +25,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? IconImg { get; set; }
 
         [JsonPropertyName("is_chat_post_feature_enabled")]
-        public bool? IsChatPostFeatureEnabled { get; set; }
+        public JsonBool IsChatPostFeatureEnabled { get; set; }
 
         [JsonPropertyName("key_color")]
         public JsonColor KeyColor { get; set; }
