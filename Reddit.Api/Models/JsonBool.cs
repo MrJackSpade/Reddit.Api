@@ -11,11 +11,9 @@ namespace Reddit.Api.Models
     {
         private readonly JsonBoolState _state;
 
-        private readonly bool _value;
-
         private JsonBool(bool value, JsonBoolState state)
         {
-            _value = value;
+            Value = value;
             _state = state;
         }
 
@@ -84,7 +82,7 @@ namespace Reddit.Api.Models
         /// <summary>
         /// The underlying boolean value. Only meaningful when IsTrue or IsFalse.
         /// </summary>
-        public bool Value => _value;
+        public bool Value { get; }
 
         /// <summary>
         /// Implicit conversion to bool. Returns false for any falsy value (false, null, empty).

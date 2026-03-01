@@ -11,11 +11,9 @@ namespace Reddit.Api.Models
     {
         private readonly JsonDateTimeState _state;
 
-        private readonly DateTime _value;
-
         private JsonDateTime(DateTime value, JsonDateTimeState state)
         {
-            _value = value;
+            Value = value;
             _state = state;
         }
 
@@ -56,7 +54,7 @@ namespace Reddit.Api.Models
         /// <summary>
         /// The underlying DateTime value. Only valid when HasValue is true.
         /// </summary>
-        public DateTime Value => _value;
+        public DateTime Value { get; }
 
         /// <summary>
         /// Creates a JsonDateTime with a valid DateTime value.
@@ -73,13 +71,13 @@ namespace Reddit.Api.Models
                 throw new InvalidOperationException($"Cannot convert {(value.IsNull ? "null" : "empty")} JsonDateTime to DateTime.");
             }
 
-            return value._value;
+            return value.Value;
         }
 
         /// <summary>
         /// Implicit conversion to DateTime?. Returns null if null or empty.
         /// </summary>
-        public static implicit operator DateTime?(JsonDateTime value) => value.HasValue ? value._value : null;
+        public static implicit operator DateTime?(JsonDateTime value) => value.HasValue ? value.Value : null;
 
         public static implicit operator JsonDateTime(DateTime value) => FromDateTime(value);
 
@@ -96,15 +94,15 @@ namespace Reddit.Api.Models
                 return false;
             }
 
-            return _state != JsonDateTimeState.HasValue || _value == other._value;
+            return _state != JsonDateTimeState.HasValue || Value == other.Value;
         }
 
-        public override int GetHashCode() => HashCode.Combine(_state, _value);
+        public override int GetHashCode() => HashCode.Combine(_state, Value);
 
         /// <summary>
         /// Returns the Value if HasValue is true, otherwise returns null.
         /// </summary>
-        public DateTime? ToNullable() => HasValue ? _value : null;
+        public DateTime? ToNullable() => HasValue ? Value : null;
 
         public override string ToString()
         {
@@ -112,7 +110,7 @@ namespace Reddit.Api.Models
             {
                 JsonDateTimeState.Null => "null",
                 JsonDateTimeState.Empty => "empty",
-                JsonDateTimeState.HasValue => _value.ToString("O"),
+                JsonDateTimeState.HasValue => Value.ToString("O"),
                 _ => "unknown"
             };
         }
