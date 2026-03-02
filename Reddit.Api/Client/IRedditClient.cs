@@ -128,6 +128,12 @@ namespace Reddit.Api.Client
         /// </summary>
         Task<Listing<Thing<Link>>?> GetTopAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// GET any listing endpoint - Generic method for fetching listings from any URL.
+        /// Returns posts, comments, or other things depending on the endpoint.
+        /// </summary>
+        Task<Listing<Thing<T>>?> GetListingAsync<T>(string endpoint, ListingParameters? parameters = null, CancellationToken cancellationToken = default);
+
         #endregion Listings
 
         #region Links & Comments

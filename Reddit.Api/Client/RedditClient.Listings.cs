@@ -164,5 +164,14 @@ namespace Reddit.Api.Client
             string query = parameters?.ToQueryString() ?? string.Empty;
             return await this.GetAsync<Listing<Thing<Link>>>($"{endpoint}{query}", cancellationToken);
         }
+
+        /// <inheritdoc />
+        public async Task<Listing<Thing<T>>?> GetListingAsync<T>(string endpoint, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+            string query = parameters?.ToQueryString() ?? string.Empty;
+            string fullEndpoint = endpoint.StartsWith("/") ? endpoint : $"/{endpoint}";
+            return await this.GetAsync<Listing<Thing<T>>>($"{fullEndpoint}{query}", cancellationToken);
+        }
     }
 }

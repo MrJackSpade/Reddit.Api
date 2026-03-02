@@ -36,7 +36,7 @@ namespace Reddit.Api.Models.Json.Messages
         public string? Dest { get; set; }
 
         [JsonPropertyName("distinguished")]
-        public string? Distinguished { get; set; }
+        public DistinguishedKind Distinguished { get; set; }
 
         [JsonPropertyName("first_message")]
         public long? FirstMessage { get; set; }

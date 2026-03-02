@@ -102,14 +102,26 @@ namespace Reddit.Api.Models.Json.Listings
 
     public class ImageSource
     {
+        [JsonPropertyName("gif")]
+        public string? Gif { get; set; }
+
         [JsonPropertyName("height")]
         public int Height { get; set; }
 
-        [JsonPropertyName("url")]
-        public string Url { get; set; } = string.Empty;
+        [JsonPropertyName("mp4")]
+        public string? Mp4 { get; set; }
+
+        [JsonPropertyName("u")]
+        public string? Url { get; set; }
 
         [JsonPropertyName("width")]
         public int Width { get; set; }
+
+        [JsonPropertyName("x")]
+        public int X { get; set; }
+
+        [JsonPropertyName("y")]
+        public int Y { get; set; }
     }
 
     public class ImageVariants
@@ -316,7 +328,7 @@ namespace Reddit.Api.Models.Json.Listings
         public bool NoFollow { get; set; }
 
         [JsonPropertyName("num_comments")]
-        public int NumComments { get; set; }
+        public int? NumComments { get; set; }
 
         [JsonPropertyName("num_crossposts")]
         public int NumCrossposts { get; set; }
