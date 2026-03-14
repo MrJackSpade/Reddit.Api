@@ -1,3 +1,4 @@
+using Reddit.Api.Converters;
 using Reddit.Api.Models.Enums;
 using System.Text.Json.Serialization;
 
@@ -18,9 +19,11 @@ namespace Reddit.Api.Models.Json.Messages
         public string? AuthorFullname { get; set; }
 
         [JsonPropertyName("body")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Body { get; set; }
 
         [JsonPropertyName("body_html")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? BodyHtml { get; set; }
 
         [JsonPropertyName("context")]
