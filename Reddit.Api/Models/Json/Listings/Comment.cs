@@ -40,6 +40,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? AuthorFlairTemplateId { get; set; }
 
         [JsonPropertyName("author_flair_text")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? AuthorFlairText { get; set; }
 
         [JsonPropertyName("author_flair_text_color")]

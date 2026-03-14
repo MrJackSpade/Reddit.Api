@@ -238,6 +238,7 @@ namespace Reddit.Api.Models.Json.Subreddits
         public string? UserFlairTemplateId { get; set; }
 
         [JsonPropertyName("user_flair_text")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? UserFlairText { get; set; }
 
         [JsonPropertyName("user_flair_text_color")]
