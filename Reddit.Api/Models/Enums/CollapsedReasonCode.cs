@@ -28,7 +28,7 @@ namespace Reddit.Api.Models.Enums
         [JsonStringEnumMemberName("deleted")]
         Deleted,
 
-        [JsonStringEnumMemberName("blocked-author")]
+        [JsonStringEnumMemberName("BLOCKED_AUTHOR")]
         BlockedAuthor
     }
 }
