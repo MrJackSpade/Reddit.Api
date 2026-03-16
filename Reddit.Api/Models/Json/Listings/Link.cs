@@ -70,12 +70,14 @@ namespace Reddit.Api.Models.Json.Listings
         public string? EmojiId { get; set; }
 
         [JsonPropertyName("t")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Text { get; set; }
 
         [JsonPropertyName("e")]
         public string Type { get; set; } = string.Empty;
 
         [JsonPropertyName("u")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Url { get; set; }
     }
 
@@ -103,15 +105,18 @@ namespace Reddit.Api.Models.Json.Listings
     public class ImageSource
     {
         [JsonPropertyName("gif")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Gif { get; set; }
 
         [JsonPropertyName("height")]
         public int Height { get; set; }
 
         [JsonPropertyName("mp4")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Mp4 { get; set; }
 
         [JsonPropertyName("u")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Url { get; set; }
 
         [JsonPropertyName("width")]
