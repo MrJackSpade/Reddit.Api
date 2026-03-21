@@ -44,7 +44,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? AuthorFlairText { get; set; }
 
         [JsonPropertyName("author_flair_text_color")]
-        public JsonColor AuthorFlairTextColor { get; set; }
+        public FlairTextColor AuthorFlairTextColor { get; set; }
 
         [JsonPropertyName("author_fullname")]
         public string? AuthorFullname { get; set; }

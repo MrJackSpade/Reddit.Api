@@ -184,7 +184,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? AuthorFlairText { get; set; }
 
         [JsonPropertyName("author_flair_text_color")]
-        public JsonColor AuthorFlairTextColor { get; set; }
+        public FlairTextColor AuthorFlairTextColor { get; set; }
 
         [JsonPropertyName("author_fullname")]
         public string? AuthorFullname { get; set; }
@@ -299,7 +299,7 @@ namespace Reddit.Api.Models.Json.Listings
         public string? LinkFlairText { get; set; }
 
         [JsonPropertyName("link_flair_text_color")]
-        public JsonColor LinkFlairTextColor { get; set; }
+        public FlairTextColor LinkFlairTextColor { get; set; }
 
         [JsonPropertyName("link_flair_type")]
         public string? LinkFlairType { get; set; }
