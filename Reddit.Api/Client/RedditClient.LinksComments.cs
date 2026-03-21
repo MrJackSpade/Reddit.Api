@@ -2,6 +2,7 @@ using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.LinksComments;
 using Reddit.Api.Models.Json.Listings;
+using Reddit.Api.Models.Json.Media;
 using System.Text.Json;
 
 namespace Reddit.Api.Client
@@ -9,7 +10,7 @@ namespace Reddit.Api.Client
     public partial class RedditClient
     {
         /// <inheritdoc />
-        public async Task<Thing<Comment>?> CommentAsync(string parentFullname, string text, CancellationToken cancellationToken = default)
+        public async Task<Thing<Comment>?> CommentAsync(string parentFullname, RichTextDocument richtext, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
 
@@ -17,13 +18,23 @@ namespace Reddit.Api.Client
             {
                 ["api_type"] = "json",
                 ["thing_id"] = parentFullname,
-                ["text"] = text
+                ["richtext_json"] = JsonSerializer.Serialize(richtext, _jsonOptions)
             };
 
-            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/comment", formData, cancellationToken);
-            CheckApiResponse(response);
+            // When using richtext_json, the response is a raw Comment object
+            // rather than the usual {"json":{"data":{"things":[...]}}} wrapper
+            Comment? comment = await this.PostFormAsync<Comment>("/api/comment", formData, cancellationToken);
 
-            return response?.Json?.Data?.Things?.FirstOrDefault();
+            if (comment != null)
+            {
+                return new Thing<Comment>
+                {
+                    Kind = Models.Enums.ThingKind.Comment,
+                    Data = comment
+                };
+            }
+
+            return null;
         }
 
         /// <inheritdoc />
@@ -40,7 +51,7 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Thing<Comment>?> EditAsync(string fullname, string text, CancellationToken cancellationToken = default)
+        public async Task<Thing<Comment>?> EditAsync(string fullname, RichTextDocument richtext, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
 
@@ -48,13 +59,21 @@ namespace Reddit.Api.Client
             {
                 ["api_type"] = "json",
                 ["thing_id"] = fullname,
-                ["text"] = text
+                ["richtext_json"] = JsonSerializer.Serialize(richtext, _jsonOptions)
             };
 
-            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/editusertext", formData, cancellationToken);
-            CheckApiResponse(response);
+            Comment? comment = await this.PostFormAsync<Comment>("/api/editusertext", formData, cancellationToken);
 
-            return response?.Json?.Data?.Things?.FirstOrDefault();
+            if (comment != null)
+            {
+                return new Thing<Comment>
+                {
+                    Kind = Models.Enums.ThingKind.Comment,
+                    Data = comment
+                };
+            }
+
+            return null;
         }
 
         /// <inheritdoc />

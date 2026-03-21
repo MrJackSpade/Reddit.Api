@@ -141,6 +141,9 @@ namespace Reddit.Api.Models.Json.Listings
         [JsonPropertyName("locked")]
         public bool Locked { get; set; }
 
+        [JsonPropertyName("media_metadata")]
+        public Dictionary<string, MediaMetadata>? MediaMetadata { get; set; }
+
         [JsonPropertyName("mod_note")]
         public string? ModNote { get; set; }
 

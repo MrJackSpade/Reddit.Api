@@ -4,6 +4,7 @@ using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.Flair;
 using Reddit.Api.Models.Json.LinksComments;
 using Reddit.Api.Models.Json.Listings;
+using Reddit.Api.Models.Json.Media;
 using Reddit.Api.Models.Json.Messages;
 using Reddit.Api.Models.Json.Moderation;
 using Reddit.Api.Models.Json.Multis;
@@ -139,9 +140,19 @@ namespace Reddit.Api.Client
         #region Links & Comments
 
         /// <summary>
-        /// POST /api/comment - Submit a new comment.
+        /// POST /api/comment - Submit a new comment using richtext.
         /// </summary>
-        Task<Thing<Comment>?> CommentAsync(string parentFullname, string text, CancellationToken cancellationToken = default);
+        Task<Thing<Comment>?> CommentAsync(string parentFullname, RichTextDocument richtext, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// POST /api/media/asset - Get an S3 upload lease for media.
+        /// </summary>
+        Task<MediaAssetResponse?> GetMediaAssetUploadLeaseAsync(string filepath, string mimetype, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Upload media to S3 using an upload lease from GetMediaAssetUploadLeaseAsync.
+        /// </summary>
+        Task<bool> UploadMediaToS3Async(MediaAssetResponse lease, Stream fileStream, string filename, string mimetype, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// POST /api/del - Delete a link or comment.
@@ -151,7 +162,7 @@ namespace Reddit.Api.Client
         /// <summary>
         /// POST /api/editusertext - Edit a self post or comment.
         /// </summary>
-        Task<Thing<Comment>?> EditAsync(string fullname, string text, CancellationToken cancellationToken = default);
+        Task<Thing<Comment>?> EditAsync(string fullname, RichTextDocument richtext, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// POST /api/follow_post - Follow/unfollow a post.
