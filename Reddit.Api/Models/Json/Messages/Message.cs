@@ -51,7 +51,7 @@ namespace Reddit.Api.Models.Json.Messages
         public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("new")]
-        public bool IsNew { get; set; }
+        public bool New { get; set; }
 
         [JsonPropertyName("likes")]
         public VoteState Likes { get; set; }

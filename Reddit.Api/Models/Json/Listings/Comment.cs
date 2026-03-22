@@ -159,6 +159,9 @@ namespace Reddit.Api.Models.Json.Listings
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
+        [JsonPropertyName("new")]
+        public bool New { get; set; }
+
         [JsonPropertyName("no_follow")]
         public bool NoFollow { get; set; }
 
