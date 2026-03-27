@@ -96,59 +96,18 @@ namespace Reddit.Api.Models.Json.Listings
         /// </summary>
         public string ToQueryString()
         {
-            List<string> parts = new();
-
-            if (!string.IsNullOrEmpty(After))
-            {
-                parts.Add($"after={Uri.EscapeDataString(After)}");
-            }
-
-            if (!string.IsNullOrEmpty(Before))
-            {
-                parts.Add($"before={Uri.EscapeDataString(Before)}");
-            }
-
-            if (Limit.HasValue)
-            {
-                parts.Add($"limit={Limit.Value}");
-            }
-
-            if (Count.HasValue)
-            {
-                parts.Add($"count={Count.Value}");
-            }
-
-            if (ShowAll.IsTrue)
-            {
-                parts.Add("show=all");
-            }
-
-            if (!string.IsNullOrEmpty(Time))
-            {
-                parts.Add($"t={Uri.EscapeDataString(Time)}");
-            }
-
-            if (!string.IsNullOrEmpty(Geo))
-            {
-                parts.Add($"g={Uri.EscapeDataString(Geo)}");
-            }
-
-            if (ExpandSubreddits.IsTrue)
-            {
-                parts.Add("expand_srs=true");
-            }
-
-            if (IncludeCategories.IsTrue)
-            {
-                parts.Add("include_categories=true");
-            }
-
-            if (!string.IsNullOrEmpty(SrDetail))
-            {
-                parts.Add($"sr_detail={Uri.EscapeDataString(SrDetail)}");
-            }
-
-            return parts.Count > 0 ? "?" + string.Join("&", parts) : string.Empty;
+            return new Client.QueryStringBuilder()
+                .Add("after", After)
+                .Add("before", Before)
+                .Add("limit", Limit)
+                .Add("count", Count)
+                .AddIf(ShowAll.IsTrue, "show", "all")
+                .Add("t", Time)
+                .Add("g", Geo)
+                .Add("expand_srs", ExpandSubreddits)
+                .Add("include_categories", IncludeCategories)
+                .Add("sr_detail", SrDetail)
+                .Build();
         }
     }
 }

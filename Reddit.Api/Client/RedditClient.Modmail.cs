@@ -77,33 +77,13 @@ namespace Reddit.Api.Client
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
 
-            List<string> queryParams = new();
-            if (!string.IsNullOrEmpty(subreddits))
-            {
-                queryParams.Add($"entity={Uri.EscapeDataString(subreddits)}");
-            }
-
-            if (!string.IsNullOrEmpty(state))
-            {
-                queryParams.Add($"state={Uri.EscapeDataString(state)}");
-            }
-
-            if (!string.IsNullOrEmpty(sort))
-            {
-                queryParams.Add($"sort={Uri.EscapeDataString(sort)}");
-            }
-
-            if (!string.IsNullOrEmpty(after))
-            {
-                queryParams.Add($"after={Uri.EscapeDataString(after)}");
-            }
-
-            if (limit.HasValue)
-            {
-                queryParams.Add($"limit={limit.Value}");
-            }
-
-            string query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+            string query = new QueryStringBuilder()
+                .Add("entity", subreddits)
+                .Add("state", state)
+                .Add("sort", sort)
+                .Add("after", after)
+                .Add("limit", limit)
+                .Build();
             return await this.GetAsync<ModmailConversationsResponse>($"/api/mod/conversations{query}", cancellationToken);
         }
 

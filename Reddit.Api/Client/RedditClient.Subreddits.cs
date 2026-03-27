@@ -17,14 +17,12 @@ namespace Reddit.Api.Client
         {
             await this.TryAuthenticateAsync(cancellationToken);
 
-            List<string> queryParams = new()
-            {
-                $"query={Uri.EscapeDataString(query)}",
-                $"include_over_18={includeOver18.ToString().ToLower()}",
-                $"include_profiles={includeProfiles.ToString().ToLower()}"
-            };
+            string queryString = new QueryStringBuilder()
+                .Add("query", query)
+                .Add("include_over_18", includeOver18)
+                .Add("include_profiles", includeProfiles)
+                .Build();
 
-            string queryString = "?" + string.Join("&", queryParams);
             SubredditAutocompleteResponse? response = await this.GetAsync<SubredditAutocompleteResponse>($"/api/subreddit_autocomplete{queryString}", cancellationToken);
 
             return response?.Subreddits;

@@ -61,28 +61,20 @@ namespace Reddit.Api.Client
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
 
-            List<string> queryParams = new();
+            QueryStringBuilder builder = new();
 
             if (parameters != null)
             {
-                string paramQuery = parameters.ToQueryString().TrimStart('?');
-                if (!string.IsNullOrEmpty(paramQuery))
-                {
-                    queryParams.Add(paramQuery);
-                }
+                builder.Add("after", parameters.After)
+                       .Add("before", parameters.Before)
+                       .Add("limit", parameters.Limit)
+                       .Add("count", parameters.Count);
             }
 
-            if (!string.IsNullOrEmpty(type))
-            {
-                queryParams.Add($"type={Uri.EscapeDataString(type)}");
-            }
-
-            if (!string.IsNullOrEmpty(mod))
-            {
-                queryParams.Add($"mod={Uri.EscapeDataString(mod)}");
-            }
-
-            string query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+            string query = builder
+                .Add("type", type)
+                .Add("mod", mod)
+                .Build();
             return await this.GetAsync<Listing<Thing<ModAction>>>($"/r/{subreddit}/about/log{query}", cancellationToken);
         }
 

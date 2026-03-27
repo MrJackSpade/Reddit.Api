@@ -29,32 +29,19 @@ namespace Reddit.Api.Client
             string? sort = null,
             int? limit = null,
             int? depth = null,
+            int? context = null,
             CancellationToken cancellationToken = default)
         {
             await this.TryAuthenticateAsync(cancellationToken);
 
-            List<string> queryParams = new();
-            if (!string.IsNullOrEmpty(commentId))
-            {
-                queryParams.Add($"comment={commentId}");
-            }
+            string query = new QueryStringBuilder()
+                .Add("comment", commentId)
+                .Add("sort", sort)
+                .Add("limit", limit)
+                .Add("depth", depth)
+                .Add("context", context)
+                .Build();
 
-            if (!string.IsNullOrEmpty(sort))
-            {
-                queryParams.Add($"sort={sort}");
-            }
-
-            if (limit.HasValue)
-            {
-                queryParams.Add($"limit={limit.Value}");
-            }
-
-            if (depth.HasValue)
-            {
-                queryParams.Add($"depth={depth.Value}");
-            }
-
-            string query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
             string endpoint = $"/comments/{articleId}{query}";
 
             // Reddit returns an array of two listings: [post, comments]

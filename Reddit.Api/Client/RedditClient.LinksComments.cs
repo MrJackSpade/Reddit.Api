@@ -95,18 +95,10 @@ namespace Reddit.Api.Client
         {
             await this.TryAuthenticateAsync(cancellationToken);
 
-            List<string> queryParams = new();
-            if (ids != null)
-            {
-                queryParams.Add($"id={string.Join(",", ids)}");
-            }
-
-            if (!string.IsNullOrEmpty(url))
-            {
-                queryParams.Add($"url={Uri.EscapeDataString(url)}");
-            }
-
-            string query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+            string query = new QueryStringBuilder()
+                .Add("id", ids != null ? string.Join(",", ids) : null)
+                .Add("url", url)
+                .Build();
             return await this.GetAsync<Listing<Thing<Link>>>($"/api/info{query}", cancellationToken);
         }
 

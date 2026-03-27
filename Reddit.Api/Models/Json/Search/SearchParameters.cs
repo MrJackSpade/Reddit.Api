@@ -67,57 +67,18 @@ namespace Reddit.Api.Models.Json.Search
         /// </summary>
         public string ToQueryString()
         {
-            List<string> parts = new()
-            {
-                $"q={Uri.EscapeDataString(Query)}"
-            };
-
-            if (Sort.HasValue)
-            {
-                parts.Add($"sort={Uri.EscapeDataString(Sort.Value.ToJsonString())}");
-            }
-
-            if (!string.IsNullOrEmpty(Time))
-            {
-                parts.Add($"t={Uri.EscapeDataString(Time)}");
-            }
-
-            if (Type.HasValue)
-            {
-                parts.Add($"type={Uri.EscapeDataString(Type.Value.ToJsonString())}");
-            }
-
-            if (!string.IsNullOrEmpty(After))
-            {
-                parts.Add($"after={Uri.EscapeDataString(After)}");
-            }
-
-            if (!string.IsNullOrEmpty(Before))
-            {
-                parts.Add($"before={Uri.EscapeDataString(Before)}");
-            }
-
-            if (Limit.HasValue)
-            {
-                parts.Add($"limit={Limit.Value}");
-            }
-
-            if (!RestrictSr.IsNull)
-            {
-                parts.Add($"restrict_sr={RestrictSr.ToString()}");
-            }
-
-            if (!IncludeFacets.IsNull)
-            {
-                parts.Add($"include_facets={IncludeFacets.ToString()}");
-            }
-
-            if (!IncludeOver18.IsNull)
-            {
-                parts.Add($"include_over_18={IncludeOver18.ToString()}");
-            }
-
-            return "?" + string.Join("&", parts);
+            return new Client.QueryStringBuilder()
+                .Add("q", Query)
+                .Add("sort", Sort?.ToJsonString())
+                .Add("t", Time)
+                .Add("type", Type?.ToJsonString())
+                .Add("after", After)
+                .Add("before", Before)
+                .Add("limit", Limit)
+                .Add("restrict_sr", RestrictSr)
+                .Add("include_facets", IncludeFacets)
+                .Add("include_over_18", IncludeOver18)
+                .Build();
         }
     }
 }

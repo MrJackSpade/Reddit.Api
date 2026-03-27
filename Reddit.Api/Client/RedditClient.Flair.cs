@@ -74,24 +74,11 @@ namespace Reddit.Api.Client
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
 
-            List<string> queryParams = new();
-
-            if (!string.IsNullOrEmpty(after))
-            {
-                queryParams.Add($"after={Uri.EscapeDataString(after)}");
-            }
-
-            if (limit.HasValue)
-            {
-                queryParams.Add($"limit={limit.Value}");
-            }
-
-            if (!string.IsNullOrEmpty(name))
-            {
-                queryParams.Add($"name={Uri.EscapeDataString(name)}");
-            }
-
-            string query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : string.Empty;
+            string query = new QueryStringBuilder()
+                .Add("after", after)
+                .Add("limit", limit)
+                .Add("name", name)
+                .Build();
             return await this.GetAsync<FlairListResponse>($"/r/{subreddit}/api/flairlist{query}", cancellationToken);
         }
 

@@ -17,6 +17,9 @@ namespace Reddit.Api.Models.Json.Media
         [JsonStringEnumMemberName("link")]
         Link,
 
+        [JsonStringEnumMemberName("blockquote")]
+        Blockquote,
+
         [JsonStringEnumMemberName("code")]
         Code,
 

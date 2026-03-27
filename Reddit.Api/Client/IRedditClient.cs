@@ -97,7 +97,7 @@ namespace Reddit.Api.Client
         /// <summary>
         /// GET /comments/{article} - Get post comments.
         /// </summary>
-        Task<(Thing<Link>? Post, Listing<Thing<Comment>>? Comments)> GetCommentsAsync(string articleId, string? commentId = null, string? sort = null, int? limit = null, int? depth = null, CancellationToken cancellationToken = default);
+        Task<(Thing<Link>? Post, Listing<Thing<Comment>>? Comments)> GetCommentsAsync(string articleId, string? commentId = null, string? sort = null, int? limit = null, int? depth = null, int? context = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// GET /controversial or /r/{subreddit}/controversial - Get controversial posts.
