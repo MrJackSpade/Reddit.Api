@@ -41,6 +41,12 @@ namespace Reddit.Api.Client
         /// </summary>
         Task<bool> AuthenticateAsync(CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Sets the function to call when a bearer token is needed or has expired.
+        /// The function should open a login UI and return the new token, or null if cancelled.
+        /// </summary>
+        void SetTokenRefreshFunction(Func<Task<string?>> tokenRefreshFunc);
+
         #endregion Authentication
 
         #region Account

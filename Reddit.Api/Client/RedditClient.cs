@@ -31,6 +31,8 @@ namespace Reddit.Api.Client
 
         private DateTime _tokenExpiration = DateTime.MinValue;
 
+        private Func<Task<string?>>? _tokenRefreshFunc;
+
         /// <summary>
         /// Creates a new RedditClient instance.
         /// </summary>
@@ -131,6 +133,28 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
+        public void SetTokenRefreshFunction(Func<Task<string?>> tokenRefreshFunc)
+        {
+            _tokenRefreshFunc = tokenRefreshFunc;
+        }
+
+        private async Task SetBearerTokenAsync(string accessToken, int expiresInSeconds = 86400, CancellationToken cancellationToken = default)
+        {
+            _token = new OAuthToken
+            {
+                AccessToken = accessToken,
+                TokenType = "Bearer",
+                ExpiresIn = expiresInSeconds
+            };
+
+            _tokenExpiration = DateTime.UtcNow.AddSeconds(expiresInSeconds - 5);
+
+            // Resolve username from the API
+            Models.Json.Account.MeResponse? me = await this.GetMeAsync(cancellationToken);
+            AuthenticatedUser = me?.Name;
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
             _throttleSemaphore.Dispose();
@@ -161,25 +185,42 @@ namespace Reddit.Api.Client
 
             string url = this.BuildUrl(endpoint);
             using HttpRequestMessage request = new(HttpMethod.Delete, url);
-            this.AddAuthHeader(request);
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
             return response.IsSuccessStatusCode;
         }
 
         /// <summary>
         /// Ensures the client is authenticated before making a request.
+        /// Falls back to the token refresh function if credentials aren't available.
         /// </summary>
         protected async Task EnsureAuthenticatedAsync(CancellationToken cancellationToken)
         {
-            if (!IsAuthenticated)
+            if (IsAuthenticated)
             {
-                bool success = await this.AuthenticateAsync(cancellationToken);
-                if (!success)
+                return;
+            }
+
+            if (CanAuthenticate)
+            {
+                if (await this.AuthenticateAsync(cancellationToken))
                 {
-                    throw new InvalidOperationException("Authentication required but failed.");
+                    return;
                 }
             }
+
+            if (_tokenRefreshFunc != null)
+            {
+                string? token = await _tokenRefreshFunc();
+
+                if (token != null)
+                {
+                    await this.SetBearerTokenAsync(token, cancellationToken: cancellationToken);
+                    return;
+                }
+            }
+
+            throw new InvalidOperationException("Authentication required but failed.");
         }
 
         /// <summary>
@@ -191,9 +232,8 @@ namespace Reddit.Api.Client
 
             string url = this.BuildUrl(endpoint);
             using HttpRequestMessage request = new(HttpMethod.Get, url);
-            this.AddAuthHeader(request);
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -209,12 +249,11 @@ namespace Reddit.Api.Client
 
             string url = this.BuildUrl(endpoint);
             using HttpRequestMessage request = new(HttpMethod.Patch, url);
-            this.AddAuthHeader(request);
 
             string json = JsonSerializer.Serialize(body, _jsonOptions);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -230,10 +269,9 @@ namespace Reddit.Api.Client
 
             string url = this.BuildUrl(endpoint);
             using HttpRequestMessage request = new(HttpMethod.Post, url);
-            this.AddAuthHeader(request);
             request.Content = new FormUrlEncodedContent(formData);
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -249,10 +287,9 @@ namespace Reddit.Api.Client
 
             string url = this.BuildUrl(endpoint);
             using HttpRequestMessage request = new(HttpMethod.Post, url);
-            this.AddAuthHeader(request);
             request.Content = new FormUrlEncodedContent(formData);
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
             return response.IsSuccessStatusCode;
         }
 
@@ -265,12 +302,11 @@ namespace Reddit.Api.Client
 
             string url = this.BuildUrl(endpoint);
             using HttpRequestMessage request = new(HttpMethod.Put, url);
-            this.AddAuthHeader(request);
 
             string json = JsonSerializer.Serialize(body, _jsonOptions);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -301,14 +337,70 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
-        /// Optionally authenticates if credentials are available.
+        /// Optionally authenticates if credentials or token refresh function are available.
         /// </summary>
         protected async Task TryAuthenticateAsync(CancellationToken cancellationToken)
         {
-            if (!IsAuthenticated && CanAuthenticate)
+            if (IsAuthenticated)
+            {
+                return;
+            }
+
+            if (CanAuthenticate)
             {
                 await this.AuthenticateAsync(cancellationToken);
+                return;
             }
+
+            if (_tokenRefreshFunc != null)
+            {
+                string? token = await _tokenRefreshFunc();
+
+                if (token != null)
+                {
+                    await this.SetBearerTokenAsync(token, cancellationToken: cancellationToken);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends a request and retries once with a refreshed token on 403.
+        /// </summary>
+        private async Task<HttpResponseMessage> SendWithAuthAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            this.AddAuthHeader(request);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden && _tokenRefreshFunc != null)
+            {
+                string? newToken = await _tokenRefreshFunc();
+
+                if (newToken != null)
+                {
+                    await this.SetBearerTokenAsync(newToken, cancellationToken: cancellationToken);
+
+                    // Clone the request since the original is already sent/disposed
+                    using HttpRequestMessage retry = new(request.Method, request.RequestUri);
+                    this.AddAuthHeader(retry);
+
+                    if (request.Content != null)
+                    {
+                        // Content may have been consumed; we need the caller to rebuild.
+                        // For form/json content, read the bytes and recreate.
+                        byte[] bytes = await request.Content.ReadAsByteArrayAsync(cancellationToken);
+                        retry.Content = new ByteArrayContent(bytes);
+
+                        if (request.Content.Headers.ContentType != null)
+                        {
+                            retry.Content.Headers.ContentType = request.Content.Headers.ContentType;
+                        }
+                    }
+
+                    response = await _httpClient.SendAsync(retry, cancellationToken);
+                }
+            }
+
+            return response;
         }
 
         /// <summary>

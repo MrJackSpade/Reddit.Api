@@ -1,4 +1,5 @@
 using Reddit.Api.Models.Enums;
+using Reddit.Api.Models.Json.Media;
 
 namespace Reddit.Api.Tests
 {
@@ -110,7 +111,13 @@ namespace Reddit.Api.Tests
             try
             {
                 // Add a comment as the mod
-                var comment = await Client!.CommentAsync(post.Name, "This is a mod comment for testing distinguish.");
+                RichTextDocument richtext = new();
+                richtext.Document.Add(new RichTextElement
+                {
+                    ElementType = RichTextElementType.Paragraph,
+                    Children = [new RichTextElement { ElementType = RichTextElementType.Text, Text = "This is a mod comment for testing distinguish." }]
+                });
+                var comment = await Client!.CommentAsync(post.Name, richtext);
                 Assert.IsNotNull(comment);
                 Assert.IsNotNull(comment.Data);
 
