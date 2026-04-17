@@ -1,3 +1,5 @@
+using Reddit.Api.Models;
+using Reddit.Api.Models.Json.Account;
 using Reddit.Api.Models.Json.Common;
 using System.Net.Http.Headers;
 using System.Text;
@@ -27,9 +29,7 @@ namespace Reddit.Api.Client
 
         private DateTime _lastRequest = DateTime.MinValue;
 
-        private OAuthToken? _token;
-
-        private DateTime _tokenExpiration = DateTime.MinValue;
+        private BearerToken? _token;
 
         private Func<Task<string?>>? _tokenRefreshFunc;
 
@@ -53,13 +53,13 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public string? AuthenticatedUser { get; private set; }
+        public string? AuthenticatedUser => _token?.AuthenticatedUser;
 
         /// <inheritdoc />
         public bool CanAuthenticate => _credentials.IsValid;
 
         /// <inheritdoc />
-        public bool IsAuthenticated => _token != null && DateTime.UtcNow < _tokenExpiration;
+        public bool IsAuthenticated => _token != null && !_token.IsExpired;
 
         /// <summary>
         /// Minimum delay between requests in milliseconds.
@@ -111,23 +111,24 @@ namespace Reddit.Api.Client
                 }
 
                 string content = await response.Content.ReadAsStringAsync(cancellationToken);
-                _token = JsonSerializer.Deserialize<OAuthToken>(content, _jsonOptions);
+                OAuthToken? oauthResponse = JsonSerializer.Deserialize<OAuthToken>(content, _jsonOptions);
 
-                if (_token == null || string.IsNullOrEmpty(_token.AccessToken))
+                if (oauthResponse == null || string.IsNullOrEmpty(oauthResponse.AccessToken) || _credentials.Username == null)
                 {
                     return false;
                 }
 
                 // Set expiration 5 seconds before actual expiration for safety
-                _tokenExpiration = DateTime.UtcNow.AddSeconds(_token.ExpiresIn - 5);
-                AuthenticatedUser = _credentials.Username;
+                _token = new BearerToken(
+                    oauthResponse.AccessToken,
+                    _credentials.Username,
+                    DateTime.UtcNow.AddSeconds(oauthResponse.ExpiresIn - 5));
 
                 return true;
             }
             catch
             {
                 _token = null;
-                AuthenticatedUser = null;
                 return false;
             }
         }
@@ -138,20 +139,45 @@ namespace Reddit.Api.Client
             _tokenRefreshFunc = tokenRefreshFunc;
         }
 
-        private async Task SetBearerTokenAsync(string accessToken, int expiresInSeconds = 86400, CancellationToken cancellationToken = default)
+        /// <inheritdoc />
+        public void SetBearerToken(BearerToken token)
         {
-            _token = new OAuthToken
+            _token = token;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ValidateBearerToken(BearerToken token)
+        {
+            string? owner = await this.GetTokenOwner(token.AccessToken);
+            return owner != null;
+        }
+
+        /// <inheritdoc />
+        public async Task<string?> GetTokenOwner(string accessToken)
+        {
+            await this.ThrottleAsync(CancellationToken.None);
+
+            using HttpRequestMessage request = new(HttpMethod.Get, $"{OAuthBaseUrl}/api/v1/me");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+
+            HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
             {
-                AccessToken = accessToken,
-                TokenType = "Bearer",
-                ExpiresIn = expiresInSeconds
-            };
+                return null;
+            }
 
-            _tokenExpiration = DateTime.UtcNow.AddSeconds(expiresInSeconds - 5);
+            string content = await response.Content.ReadAsStringAsync();
+            MeResponse? me = JsonSerializer.Deserialize<MeResponse>(content, _jsonOptions);
 
-            // Resolve username from the API
-            Models.Json.Account.MeResponse? me = await this.GetMeAsync(cancellationToken);
-            AuthenticatedUser = me?.Name;
+            if (me is null)
+            {
+                throw new NullReferenceException("No owner returned for token");
+            }
+
+            return me.Name;
+
         }
 
         /// <inheritdoc />
@@ -215,8 +241,12 @@ namespace Reddit.Api.Client
 
                 if (token != null)
                 {
-                    await this.SetBearerTokenAsync(token, cancellationToken: cancellationToken);
-                    return;
+                    string? owner = await this.GetTokenOwner(token);
+                    if (owner != null)
+                    {
+                        this.SetBearerToken(new BearerToken(token, owner));
+                        return;
+                    }
                 }
             }
 
@@ -358,26 +388,38 @@ namespace Reddit.Api.Client
 
                 if (token != null)
                 {
-                    await this.SetBearerTokenAsync(token, cancellationToken: cancellationToken);
+                    string? owner = await this.GetTokenOwner(token);
+                    if (owner != null)
+                    {
+                        this.SetBearerToken(new BearerToken(token, owner));
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Sends a request and retries once with a refreshed token on 403.
+        /// Sends a request and retries once with a refreshed token on 401 or 403.
         /// </summary>
         private async Task<HttpResponseMessage> SendWithAuthAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             this.AddAuthHeader(request);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden && _tokenRefreshFunc != null)
+            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized
+                                    or System.Net.HttpStatusCode.Forbidden
+                && _tokenRefreshFunc != null)
             {
                 string? newToken = await _tokenRefreshFunc();
 
                 if (newToken != null)
                 {
-                    await this.SetBearerTokenAsync(newToken, cancellationToken: cancellationToken);
+                    string? owner = await this.GetTokenOwner(newToken);
+                    if (owner == null)
+                    {
+                        return response;
+                    }
+
+                    this.SetBearerToken(new BearerToken(newToken, owner));
 
                     // Clone the request since the original is already sent/disposed
                     using HttpRequestMessage retry = new(request.Method, request.RequestUri);
@@ -411,7 +453,7 @@ namespace Reddit.Api.Client
             if (IsAuthenticated && _token != null)
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue(
-                    _token.TokenType, _token.AccessToken);
+                    "Bearer", _token.AccessToken);
             }
         }
 

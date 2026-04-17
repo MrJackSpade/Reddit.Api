@@ -126,6 +126,102 @@ namespace Reddit.Api.Tests
         }
 
         [TestMethod]
+        public async Task GetHot_RAll_ReturnsJsonNotHtml()
+        {
+            EnsureClientReady();
+
+            var listing = await Client!.GetHotAsync("all", new ListingParameters { Limit = 5 });
+
+            Assert.IsNotNull(listing);
+            Assert.IsNotNull(listing.Data);
+            Assert.IsNotNull(listing.Data.Children);
+            Assert.IsTrue(listing.Data.Children.Count > 0);
+
+            var firstPost = listing.Data.Children[0];
+            Assert.AreEqual(ThingKind.Link, firstPost.Kind);
+            Assert.IsNotNull(firstPost.Data);
+            Assert.IsFalse(string.IsNullOrEmpty(firstPost.Data.Title));
+        }
+
+        [TestMethod]
+        public async Task GetNew_RAll_ReturnsJsonNotHtml()
+        {
+            EnsureClientReady();
+
+            var listing = await Client!.GetNewAsync("all", new ListingParameters { Limit = 5 });
+
+            Assert.IsNotNull(listing);
+            Assert.IsNotNull(listing.Data);
+            Assert.IsNotNull(listing.Data.Children);
+            Assert.IsTrue(listing.Data.Children.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task GetTop_RAll_ReturnsJsonNotHtml()
+        {
+            EnsureClientReady();
+
+            var listing = await Client!.GetTopAsync("all", new ListingParameters { Limit = 5, Time = "day" });
+
+            Assert.IsNotNull(listing);
+            Assert.IsNotNull(listing.Data);
+            Assert.IsNotNull(listing.Data.Children);
+            Assert.IsTrue(listing.Data.Children.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task GetListing_RAll_ReturnsJsonNotHtml()
+        {
+            EnsureClientReady();
+
+            var listing = await Client!.GetListingAsync<Link>("/r/all/hot", new ListingParameters { Limit = 5 });
+
+            Assert.IsNotNull(listing);
+            Assert.IsNotNull(listing.Data);
+            Assert.IsNotNull(listing.Data.Children);
+            Assert.IsTrue(listing.Data.Children.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task GetHot_RAll_WithBrowserToken_ReturnsJsonNotHtml()
+        {
+            // Simulate browser-token auth path: no OAuth credentials, token comes from refresh function
+            var credentials = new Reddit.Api.Client.RedditCredentials
+            {
+                UserAgent = "Reddit.Api.Tests/1.0 (BrowserToken)"
+            };
+
+            using var browserClient = new Reddit.Api.Client.RedditClient(credentials);
+
+            // Get a real OAuth token to simulate having a browser token
+            using var http = new HttpClient();
+            var authValue = Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes($"{TestSettings.AppKey}:{TestSettings.AppSecret}"));
+            var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://www.reddit.com/api/v1/access_token");
+            tokenRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", authValue);
+            tokenRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "password",
+                ["username"] = TestSettings.Username!,
+                ["password"] = TestSettings.Password!
+            });
+            tokenRequest.Headers.UserAgent.ParseAdd("Reddit.Api.Tests/1.0");
+            var tokenResponse = await http.SendAsync(tokenRequest);
+            var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+            var token = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(tokenJson)
+                .GetProperty("access_token").GetString()!;
+
+            browserClient.SetTokenRefreshFunction(() => Task.FromResult<string?>(token));
+
+            var listing = await browserClient.GetHotAsync("all", new ListingParameters { Limit = 5 });
+
+            Assert.IsNotNull(listing);
+            Assert.IsNotNull(listing.Data);
+            Assert.IsNotNull(listing.Data.Children);
+            Assert.IsTrue(listing.Data.Children.Count > 0);
+        }
+
+        [TestMethod]
         public async Task Pagination_WorksCorrectly()
         {
             EnsureClientReady();

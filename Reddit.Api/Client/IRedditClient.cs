@@ -1,3 +1,4 @@
+using Reddit.Api.Models;
 using Reddit.Api.Models.Enums;
 using Reddit.Api.Models.Json.Account;
 using Reddit.Api.Models.Json.Common;
@@ -46,6 +47,26 @@ namespace Reddit.Api.Client
         /// The function should open a login UI and return the new token, or null if cancelled.
         /// </summary>
         void SetTokenRefreshFunction(Func<Task<string?>> tokenRefreshFunc);
+
+        /// <summary>
+        /// Stores a bearer token on the client. Performs no validation — call
+        /// <see cref="ValidateBearerToken"/> first if the token's validity is unknown.
+        /// </summary>
+        void SetBearerToken(BearerToken token);
+
+        /// <summary>
+        /// Verifies a bearer token by issuing a /api/v1/me request with it directly.
+        /// Returns true if the token is accepted by Reddit. Does not mutate client state.
+        /// </summary>
+        Task<bool> ValidateBearerToken(BearerToken token);
+
+        /// <summary>
+        /// Resolves the username that owns a raw access token by calling /api/v1/me with
+        /// it directly. Returns the username on success, or null if the token is rejected.
+        /// Does not mutate client state. Use this to obtain the username before constructing
+        /// a <see cref="BearerToken"/> from a freshly retrieved access token.
+        /// </summary>
+        Task<string?> GetTokenOwner(string accessToken);
 
         #endregion Authentication
 
@@ -179,6 +200,11 @@ namespace Reddit.Api.Client
         /// GET /api/info - Get info about things by ID or URL.
         /// </summary>
         Task<Listing<Thing<Link>>?> GetInfoAsync(IEnumerable<string>? ids = null, string? url = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// GET /api/info - Get info about comments by fullname IDs.
+        /// </summary>
+        Task<Listing<Thing<Comment>>?> GetCommentInfoAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// GET /api/morechildren - Load more comments.

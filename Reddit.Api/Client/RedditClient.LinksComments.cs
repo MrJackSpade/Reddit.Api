@@ -103,6 +103,17 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
+        public async Task<Listing<Thing<Comment>>?> GetCommentInfoAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            await this.TryAuthenticateAsync(cancellationToken);
+
+            string query = new QueryStringBuilder()
+                .Add("id", string.Join(",", ids))
+                .Build();
+            return await this.GetAsync<Listing<Thing<Comment>>>($"/api/info{query}", cancellationToken);
+        }
+
+        /// <inheritdoc />
         public async Task<List<Thing<Comment>>?> GetMoreChildrenAsync(
             string linkFullname,
             IEnumerable<string> children,
