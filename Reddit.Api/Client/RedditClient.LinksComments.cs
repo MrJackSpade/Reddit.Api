@@ -4,6 +4,7 @@ using Reddit.Api.Models.Json.LinksComments;
 using Reddit.Api.Models.Json.Listings;
 using Reddit.Api.Models.Json.Media;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Reddit.Api.Client
 {
@@ -35,6 +36,23 @@ namespace Reddit.Api.Client
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public async Task<Thing<Comment>?> CommentAsync(string parentFullname, string markdown, CancellationToken cancellationToken = default)
+        {
+            await this.EnsureAuthenticatedAsync(cancellationToken);
+
+            Dictionary<string, string> formData = new()
+            {
+                ["api_type"] = "json",
+                ["thing_id"] = parentFullname,
+                ["text"] = markdown
+            };
+
+            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/comment", formData, cancellationToken);
+            CheckApiResponse(response);
+            return response?.Json?.Data?.Things?.FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -74,6 +92,23 @@ namespace Reddit.Api.Client
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public async Task<Thing<Comment>?> EditAsync(string fullname, string markdown, CancellationToken cancellationToken = default)
+        {
+            await this.EnsureAuthenticatedAsync(cancellationToken);
+
+            Dictionary<string, string> formData = new()
+            {
+                ["api_type"] = "json",
+                ["thing_id"] = fullname,
+                ["text"] = markdown
+            };
+
+            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/editusertext", formData, cancellationToken);
+            CheckApiResponse(response);
+            return response?.Json?.Data?.Things?.FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -453,9 +488,12 @@ namespace Reddit.Api.Client
         }
     }
 
-    // Helper class for comment response
+    // Response envelope for endpoints that return things inside the ApiResponse wrapper
+    // (e.g. /api/comment, /api/editusertext, /api/distinguish when called with text=).
+    // Reddit returns { json: { errors, data: { things: [{kind:"t1", data:{...}}] } } }.
     internal class CommentResponseData
     {
+        [JsonPropertyName("things")]
         public List<Thing<Comment>>? Things { get; set; }
     }
 }

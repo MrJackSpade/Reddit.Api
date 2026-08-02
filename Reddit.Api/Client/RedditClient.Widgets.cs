@@ -67,9 +67,8 @@ namespace Reddit.Api.Client
             request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
 
-            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             return System.Text.Json.JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
     }

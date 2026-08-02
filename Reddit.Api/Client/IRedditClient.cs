@@ -172,6 +172,13 @@ namespace Reddit.Api.Client
         Task<Thing<Comment>?> CommentAsync(string parentFullname, RichTextDocument richtext, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// POST /api/comment - Submit a new comment using raw markdown text. Reddit's
+        /// richtext path mishandles nested blockquotes; route through this when the
+        /// markdown needs Reddit's own parser. Does not support image attachments.
+        /// </summary>
+        Task<Thing<Comment>?> CommentAsync(string parentFullname, string markdown, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// POST /api/media/asset - Get an S3 upload lease for media.
         /// </summary>
         Task<MediaAssetResponse?> GetMediaAssetUploadLeaseAsync(string filepath, string mimetype, CancellationToken cancellationToken = default);
@@ -190,6 +197,13 @@ namespace Reddit.Api.Client
         /// POST /api/editusertext - Edit a self post or comment.
         /// </summary>
         Task<Thing<Comment>?> EditAsync(string fullname, RichTextDocument richtext, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// POST /api/editusertext - Edit a self post or comment using raw markdown text.
+        /// Reddit's richtext path mishandles nested blockquotes; route through this when
+        /// the markdown needs Reddit's own parser. Does not support image attachments.
+        /// </summary>
+        Task<Thing<Comment>?> EditAsync(string fullname, string markdown, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// POST /api/follow_post - Follow/unfollow a post.

@@ -1,3 +1,4 @@
+using Reddit.Api.Exceptions;
 using Reddit.Api.Models;
 using Reddit.Api.Models.Json.Account;
 using Reddit.Api.Models.Json.Common;
@@ -188,18 +189,114 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
-        /// Checks API response for errors and throws if found.
+        /// Checks a deserialized API response for a Reddit error envelope and throws if any errors are present.
         /// </summary>
+        /// <remarks>
+        /// Prefer routing responses through the shared HTTP helpers, which validate every body automatically.
+        /// This overload remains for callers that already hold a deserialized <see cref="ApiResponse{T}"/>.
+        /// </remarks>
         protected static void CheckApiResponse<T>(ApiResponse<T>? response)
         {
-            if (response?.Json?.Errors != null && response.Json.Errors.Count > 0)
+            ThrowIfApiErrors(response?.Json?.Errors);
+        }
+
+        /// <summary>
+        /// Throws a <see cref="RedditApiException"/> if the given error list contains any entries.
+        /// </summary>
+        private static void ThrowIfApiErrors(List<List<string>>? errors)
+        {
+            if (errors == null || errors.Count == 0)
             {
-                List<string> errorMessages = response.Json.Errors
-                    .Select(e => string.Join(": ", e))
-                    .ToList();
-                throw new InvalidOperationException(
-                    $"Reddit API error: {string.Join("; ", errorMessages)}");
+                return;
             }
+
+            List<RedditApiError> parsed = errors
+                .Where(e => e != null && e.Count > 0)
+                .Select(e => RedditApiError.FromArray(e))
+                .ToList();
+
+            if (parsed.Count > 0)
+            {
+                throw new RedditApiException(parsed);
+            }
+        }
+
+        /// <summary>
+        /// Scans a raw response body for the Reddit error envelope
+        /// (<c>{ "json": { "errors": [...] } }</c>) and throws <see cref="RedditApiException"/> if present.
+        /// Malformed or unrelated bodies are ignored so non-error responses parse normally downstream.
+        /// </summary>
+        private static void CheckBodyForApiErrors(string? content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return;
+            }
+
+            // Cheap pre-check: the error envelope always contains an "errors" key. Skip the parse otherwise.
+            if (!content.Contains("\"errors\"", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            List<List<string>>? errors;
+            try
+            {
+                using JsonDocument document = JsonDocument.Parse(content);
+                if (document.RootElement.ValueKind != JsonValueKind.Object
+                    || !document.RootElement.TryGetProperty("json", out JsonElement json)
+                    || json.ValueKind != JsonValueKind.Object
+                    || !json.TryGetProperty("errors", out JsonElement errorsElement)
+                    || errorsElement.ValueKind != JsonValueKind.Array)
+                {
+                    return;
+                }
+
+                errors = new List<List<string>>();
+                foreach (JsonElement errorEntry in errorsElement.EnumerateArray())
+                {
+                    if (errorEntry.ValueKind != JsonValueKind.Array)
+                    {
+                        continue;
+                    }
+
+                    List<string> parts = new();
+                    foreach (JsonElement part in errorEntry.EnumerateArray())
+                    {
+                        parts.Add(part.ValueKind == JsonValueKind.String ? part.GetString() ?? string.Empty : part.ToString());
+                    }
+
+                    errors.Add(parts);
+                }
+            }
+            catch (JsonException)
+            {
+                // Body isn't JSON we can interpret; leave error handling to the caller's deserialization.
+                return;
+            }
+
+            ThrowIfApiErrors(errors);
+        }
+
+        /// <summary>
+        /// Reads a response body, throwing <see cref="RedditHttpException"/> on a non-success status
+        /// and <see cref="RedditApiException"/> when the body carries a Reddit error envelope.
+        /// This is the single choke point every request flows through so that no API path can
+        /// silently return an error payload.
+        /// </summary>
+        private async Task<string> ReadValidatedBodyAsync(HttpResponseMessage response, string url, CancellationToken cancellationToken)
+        {
+            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // A non-2xx response may still carry a structured error envelope; prefer that detail.
+                CheckBodyForApiErrors(content);
+                throw new RedditHttpException(response.StatusCode, url, content);
+            }
+
+            CheckBodyForApiErrors(content);
+            return content;
         }
 
         /// <summary>
@@ -213,7 +310,8 @@ namespace Reddit.Api.Client
             using HttpRequestMessage request = new(HttpMethod.Delete, url);
 
             HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            return response.IsSuccessStatusCode;
+            await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            return true;
         }
 
         /// <summary>
@@ -250,7 +348,8 @@ namespace Reddit.Api.Client
                 }
             }
 
-            throw new InvalidOperationException("Authentication required but failed.");
+            throw new RedditAuthenticationException(
+                "This action requires you to be logged in, but no valid Reddit session is available.");
         }
 
         /// <summary>
@@ -264,9 +363,8 @@ namespace Reddit.Api.Client
             using HttpRequestMessage request = new(HttpMethod.Get, url);
 
             HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
 
-            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -284,9 +382,8 @@ namespace Reddit.Api.Client
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
 
-            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -302,9 +399,8 @@ namespace Reddit.Api.Client
             request.Content = new FormUrlEncodedContent(formData);
 
             HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
 
-            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -320,7 +416,8 @@ namespace Reddit.Api.Client
             request.Content = new FormUrlEncodedContent(formData);
 
             HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            return response.IsSuccessStatusCode;
+            await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            return true;
         }
 
         /// <summary>
@@ -337,9 +434,8 @@ namespace Reddit.Api.Client
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
 
-            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 

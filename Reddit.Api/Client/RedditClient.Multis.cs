@@ -112,9 +112,8 @@ namespace Reddit.Api.Client
             request.Content = new FormUrlEncodedContent(formData);
 
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
 
-            string content = await response.Content.ReadAsStringAsync(cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -131,7 +130,8 @@ namespace Reddit.Api.Client
             request.Content = new FormUrlEncodedContent(formData);
 
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            return response.IsSuccessStatusCode;
+            await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            return true;
         }
     }
 }
