@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Reddit.Api.Models.Json.LinksComments
 {
     /// <summary>
-    /// Response data from POST /api/morechildren.
+    /// Response data from GET /api/morechildren.
     /// </summary>
     public class MoreChildrenResponseData
     {

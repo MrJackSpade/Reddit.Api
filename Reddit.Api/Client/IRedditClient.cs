@@ -43,10 +43,11 @@ namespace Reddit.Api.Client
         Task<bool> AuthenticateAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Sets the function to call when a bearer token is needed or has expired.
-        /// The function should open a login UI and return the new token, or null if cancelled.
+        /// Sets the function to call when a session is needed, has expired, or was rejected.
+        /// The function should open a login UI and return the new, already validated session,
+        /// or null if cancelled. The client stores the returned session as-is.
         /// </summary>
-        void SetTokenRefreshFunction(Func<Task<string?>> tokenRefreshFunc);
+        void SetTokenRefreshFunction(Func<Task<BearerToken?>> tokenRefreshFunc);
 
         /// <summary>
         /// Stores a bearer token on the client. Performs no validation — call

@@ -98,40 +98,5 @@ namespace Reddit.Api.Client
             await this.EnsureAuthenticatedAsync(cancellationToken);
             return await this.DeleteAsync($"/api/multi/{multipath}/r/{subreddit}", cancellationToken);
         }
-
-        /// <summary>
-        /// Makes a PUT request with form data to the Reddit API.
-        /// </summary>
-        private async Task<T?> PutFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
-        {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = $"{BaseUrl}{endpoint}";
-            using HttpRequestMessage request = new(HttpMethod.Put, url);
-            this.AddAuthHeader(request);
-            request.Content = new FormUrlEncodedContent(formData);
-
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
-            return JsonSerializer.Deserialize<T>(content, _jsonOptions);
-        }
-
-        /// <summary>
-        /// Makes a PUT request with form data, returning boolean success.
-        /// </summary>
-        private async Task<bool> PutFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
-        {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = $"{BaseUrl}{endpoint}";
-            using HttpRequestMessage request = new(HttpMethod.Put, url);
-            this.AddAuthHeader(request);
-            request.Content = new FormUrlEncodedContent(formData);
-
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            await this.ReadValidatedBodyAsync(response, url, cancellationToken);
-            return true;
-        }
     }
 }

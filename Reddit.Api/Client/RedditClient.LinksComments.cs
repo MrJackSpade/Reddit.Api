@@ -158,25 +158,16 @@ namespace Reddit.Api.Client
         {
             await this.TryAuthenticateAsync(cancellationToken);
 
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["link_id"] = linkFullname,
-                ["children"] = string.Join(",", children),
-                ["limit_children"] = "false"
-            };
+            string query = new QueryStringBuilder()
+                .Add("api_type", "json")
+                .Add("link_id", linkFullname)
+                .Add("children", string.Join(",", children))
+                .Add("limit_children", false)
+                .Add("sort", sort)
+                .Add("depth", depth)
+                .Build();
 
-            if (!string.IsNullOrEmpty(sort))
-            {
-                formData["sort"] = sort;
-            }
-
-            if (depth.HasValue)
-            {
-                formData["depth"] = depth.Value.ToString();
-            }
-
-            ApiResponse<MoreChildrenResponseData>? response = await this.PostFormAsync<ApiResponse<MoreChildrenResponseData>>("/api/morechildren", formData, cancellationToken);
+            ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.WebSession);
             CheckApiResponse(response);
 
             // Parse the response - it contains things with different kinds

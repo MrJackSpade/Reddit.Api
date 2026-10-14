@@ -211,7 +211,8 @@ namespace Reddit.Api.Tests
             var token = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(tokenJson)
                 .GetProperty("access_token").GetString()!;
 
-            browserClient.SetTokenRefreshFunction(() => Task.FromResult<string?>(token));
+            string owner = (await browserClient.GetTokenOwner(token))!;
+            browserClient.SetTokenRefreshFunction(() => Task.FromResult<Reddit.Api.Models.BearerToken?>(new Reddit.Api.Models.BearerToken(token, owner)));
 
             var listing = await browserClient.GetHotAsync("all", new ListingParameters { Limit = 5 });
 

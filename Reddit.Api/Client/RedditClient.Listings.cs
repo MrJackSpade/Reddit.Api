@@ -45,7 +45,7 @@ namespace Reddit.Api.Client
             string endpoint = $"/comments/{articleId}{query}";
 
             // Reddit returns an array of two listings: [post, comments]
-            JsonElement result = await this.GetAsync<JsonElement>(endpoint, cancellationToken);
+            JsonElement result = await this.GetAsync<JsonElement>(endpoint, cancellationToken, RequestRoute.WebSession);
 
             if (result.ValueKind != JsonValueKind.Array)
             {

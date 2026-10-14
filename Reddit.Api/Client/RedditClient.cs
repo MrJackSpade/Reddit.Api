@@ -2,6 +2,7 @@ using Reddit.Api.Exceptions;
 using Reddit.Api.Models;
 using Reddit.Api.Models.Json.Account;
 using Reddit.Api.Models.Json.Common;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -32,7 +33,7 @@ namespace Reddit.Api.Client
 
         private BearerToken? _token;
 
-        private Func<Task<string?>>? _tokenRefreshFunc;
+        private Func<Task<BearerToken?>>? _tokenRefreshFunc;
 
         /// <summary>
         /// Creates a new RedditClient instance.
@@ -67,11 +68,6 @@ namespace Reddit.Api.Client
         /// Reddit recommends no more than 60 requests per minute.
         /// </summary>
         public int MinimumDelayMs { get; set; } = 500;
-
-        /// <summary>
-        /// Gets the base URL for API requests.
-        /// </summary>
-        protected string BaseUrl => IsAuthenticated ? OAuthBaseUrl : PublicBaseUrl;
 
         /// <inheritdoc />
         public async Task<bool> AuthenticateAsync(CancellationToken cancellationToken = default)
@@ -135,7 +131,7 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public void SetTokenRefreshFunction(Func<Task<string?>> tokenRefreshFunc)
+        public void SetTokenRefreshFunction(Func<Task<BearerToken?>> tokenRefreshFunc)
         {
             _tokenRefreshFunc = tokenRefreshFunc;
         }
@@ -304,13 +300,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken)
         {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = this.BuildUrl(endpoint);
-            using HttpRequestMessage request = new(HttpMethod.Delete, url);
-
-            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            await this.SendAsync(HttpMethod.Delete, endpoint, RequestRoute.Api, null, cancellationToken);
             return true;
         }
 
@@ -333,19 +323,9 @@ namespace Reddit.Api.Client
                 }
             }
 
-            if (_tokenRefreshFunc != null)
+            if (await this.RefreshSessionAsync())
             {
-                string? token = await _tokenRefreshFunc();
-
-                if (token != null)
-                {
-                    string? owner = await this.GetTokenOwner(token);
-                    if (owner != null)
-                    {
-                        this.SetBearerToken(new BearerToken(token, owner));
-                        return;
-                    }
-                }
+                return;
             }
 
             throw new RedditAuthenticationException(
@@ -355,16 +335,9 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Makes a GET request to the Reddit API.
         /// </summary>
-        protected async Task<T?> GetAsync<T>(string endpoint, CancellationToken cancellationToken)
+        protected async Task<T?> GetAsync<T>(string endpoint, CancellationToken cancellationToken, RequestRoute route = RequestRoute.Api)
         {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = this.BuildUrl(endpoint);
-            using HttpRequestMessage request = new(HttpMethod.Get, url);
-
-            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-
-            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Get, endpoint, route, null, cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -373,17 +346,16 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PatchJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
         {
-            await this.ThrottleAsync(cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Patch, endpoint, RequestRoute.Api, () => this.JsonContent(body), cancellationToken);
+            return JsonSerializer.Deserialize<T>(content, _jsonOptions);
+        }
 
-            string url = this.BuildUrl(endpoint);
-            using HttpRequestMessage request = new(HttpMethod.Patch, url);
-
-            string json = JsonSerializer.Serialize(body, _jsonOptions);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-
-            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+        /// <summary>
+        /// Makes a POST request with JSON body to the Reddit API.
+        /// </summary>
+        protected async Task<T?> PostJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
+        {
+            string content = await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Api, () => this.JsonContent(body), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -392,15 +364,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PostFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
         {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = this.BuildUrl(endpoint);
-            using HttpRequestMessage request = new(HttpMethod.Post, url);
-            request.Content = new FormUrlEncodedContent(formData);
-
-            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-
-            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -409,14 +373,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<bool> PostFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
         {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = this.BuildUrl(endpoint);
-            using HttpRequestMessage request = new(HttpMethod.Post, url);
-            request.Content = new FormUrlEncodedContent(formData);
-
-            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-            await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
             return true;
         }
 
@@ -425,18 +382,26 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PutJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
         {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = this.BuildUrl(endpoint);
-            using HttpRequestMessage request = new(HttpMethod.Put, url);
-
-            string json = JsonSerializer.Serialize(body, _jsonOptions);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await this.SendWithAuthAsync(request, cancellationToken);
-
-            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.Api, () => this.JsonContent(body), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
+        }
+
+        /// <summary>
+        /// Makes a PUT request with form data to the Reddit API.
+        /// </summary>
+        protected async Task<T?> PutFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        {
+            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
+            return JsonSerializer.Deserialize<T>(content, _jsonOptions);
+        }
+
+        /// <summary>
+        /// Makes a PUT request with form data, returning no content.
+        /// </summary>
+        protected async Task<bool> PutFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        {
+            await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
+            return true;
         }
 
         /// <summary>
@@ -478,100 +443,97 @@ namespace Reddit.Api.Client
                 return;
             }
 
-            if (_tokenRefreshFunc != null)
-            {
-                string? token = await _tokenRefreshFunc();
+            await this.RefreshSessionAsync();
+        }
 
-                if (token != null)
-                {
-                    string? owner = await this.GetTokenOwner(token);
-                    if (owner != null)
-                    {
-                        this.SetBearerToken(new BearerToken(token, owner));
-                    }
-                }
+        /// <summary>
+        /// Asks the token refresh function for a new session and stores it on the client.
+        /// Returns false when no refresh function is set or the user produced no session.
+        /// </summary>
+        private async Task<bool> RefreshSessionAsync()
+        {
+            if (_tokenRefreshFunc == null)
+            {
+                return false;
+            }
+
+            BearerToken? session = await _tokenRefreshFunc();
+
+            if (session == null)
+            {
+                return false;
+            }
+
+            this.SetBearerToken(session);
+            return true;
+        }
+
+        /// <summary>
+        /// Sends a request and returns its validated body. On 401 or 403 the session is refreshed
+        /// once and the request rebuilt from scratch, so the retry is routed and authorized for
+        /// the new session rather than replaying the one that was rejected.
+        /// </summary>
+        private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken)
+        {
+            await this.ThrottleAsync(cancellationToken);
+
+            (HttpResponseMessage response, string url) = await this.SendOnceAsync(method, endpoint, route, createContent, cancellationToken);
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
+                && await this.RefreshSessionAsync())
+            {
+                response.Dispose();
+                (response, url) = await this.SendOnceAsync(method, endpoint, route, createContent, cancellationToken);
+            }
+
+            using (response)
+            {
+                return await this.ReadValidatedBodyAsync(response, url, cancellationToken);
             }
         }
 
         /// <summary>
-        /// Sends a request and retries once with a refreshed token on 401 or 403.
+        /// Builds, authorizes and sends a single request for the current session.
         /// </summary>
-        private async Task<HttpResponseMessage> SendWithAuthAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken)
         {
-            this.AddAuthHeader(request);
+            BearerToken? session = IsAuthenticated ? _token : null;
+            bool useWebSession = route == RequestRoute.WebSession && session?.SessionCookies != null;
+
+            string url = session != null && !useWebSession
+                ? $"{OAuthBaseUrl}{endpoint}"
+                : JsonUrl(endpoint);
+
+            using HttpRequestMessage request = new(method, url);
+            request.Content = createContent?.Invoke();
+
+            if (useWebSession)
+            {
+                request.Headers.Add("Cookie", session!.SessionCookies);
+            }
+            else if (session != null)
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+            }
+
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized
-                                    or System.Net.HttpStatusCode.Forbidden
-                && _tokenRefreshFunc != null)
-            {
-                string? newToken = await _tokenRefreshFunc();
-
-                if (newToken != null)
-                {
-                    string? owner = await this.GetTokenOwner(newToken);
-                    if (owner == null)
-                    {
-                        return response;
-                    }
-
-                    this.SetBearerToken(new BearerToken(newToken, owner));
-
-                    // Clone the request since the original is already sent/disposed
-                    using HttpRequestMessage retry = new(request.Method, request.RequestUri);
-                    this.AddAuthHeader(retry);
-
-                    if (request.Content != null)
-                    {
-                        // Content may have been consumed; we need the caller to rebuild.
-                        // For form/json content, read the bytes and recreate.
-                        byte[] bytes = await request.Content.ReadAsByteArrayAsync(cancellationToken);
-                        retry.Content = new ByteArrayContent(bytes);
-
-                        if (request.Content.Headers.ContentType != null)
-                        {
-                            retry.Content.Headers.ContentType = request.Content.Headers.ContentType;
-                        }
-                    }
-
-                    response = await _httpClient.SendAsync(retry, cancellationToken);
-                }
-            }
-
-            return response;
+            return (response, url);
         }
 
         /// <summary>
-        /// Adds the OAuth authorization header to a request.
+        /// The www.reddit.com form of an endpoint, which serves JSON via a .json suffix on the path.
         /// </summary>
-        private void AddAuthHeader(HttpRequestMessage request)
+        private static string JsonUrl(string endpoint)
         {
-            if (IsAuthenticated && _token != null)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue(
-                    "Bearer", _token.AccessToken);
-            }
+            string[] parts = endpoint.Split('?', 2);
+            return parts.Length == 1
+                ? $"{PublicBaseUrl}{parts[0]}.json"
+                : $"{PublicBaseUrl}{parts[0]}.json?{parts[1]}";
         }
 
-        /// <summary>
-        /// Builds the full URL for an endpoint.
-        /// </summary>
-        private string BuildUrl(string endpoint)
+        private StringContent JsonContent(object body)
         {
-            string url = $"{BaseUrl}{endpoint}";
-
-            // Add .json extension for non-authenticated requests
-            if (!IsAuthenticated && !endpoint.Contains('?'))
-            {
-                url += ".json";
-            }
-            else if (!IsAuthenticated && endpoint.Contains('?'))
-            {
-                string[] parts = endpoint.Split('?');
-                url = $"{BaseUrl}{parts[0]}.json?{parts[1]}";
-            }
-
-            return url;
+            return new StringContent(JsonSerializer.Serialize(body, _jsonOptions), Encoding.UTF8, "application/json");
         }
     }
 }

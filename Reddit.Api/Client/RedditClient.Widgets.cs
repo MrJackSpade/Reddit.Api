@@ -51,25 +51,5 @@ namespace Reddit.Api.Client
             object? response = await this.PatchJsonAsync<object>($"/r/{subreddit}/api/widget_order/{section}", body, cancellationToken);
             return response != null;
         }
-
-        /// <summary>
-        /// Makes a POST request with JSON body.
-        /// </summary>
-        private async Task<T?> PostJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
-        {
-            await this.ThrottleAsync(cancellationToken);
-
-            string url = $"{BaseUrl}{endpoint}";
-            using HttpRequestMessage request = new(HttpMethod.Post, url);
-            this.AddAuthHeader(request);
-
-            string json = System.Text.Json.JsonSerializer.Serialize(body, _jsonOptions);
-            request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-            string content = await this.ReadValidatedBodyAsync(response, url, cancellationToken);
-            return System.Text.Json.JsonSerializer.Deserialize<T>(content, _jsonOptions);
-        }
     }
 }
