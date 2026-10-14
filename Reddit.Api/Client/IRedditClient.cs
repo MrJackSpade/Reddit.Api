@@ -43,6 +43,19 @@ namespace Reddit.Api.Client
         Task<bool> AuthenticateAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Makes sure a session exists: keeps a live one, otherwise authenticates with the
+        /// configured credentials or obtains a session from the token refresh function (login UI).
+        /// Throws <see cref="Exceptions.RedditAuthenticationException"/> if none could be obtained.
+        /// </summary>
+        Task EnsureAuthenticatedAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Like <see cref="EnsureAuthenticatedAsync"/>, but leaves the client anonymous instead of
+        /// throwing when no session could be obtained. Used before requests that also work logged out.
+        /// </summary>
+        Task TryAuthenticateAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Sets the function to call when a session is needed, has expired, or was rejected.
         /// The function should open a login UI and return the new, already validated session,
         /// or null if cancelled. The client stores the returned session as-is.

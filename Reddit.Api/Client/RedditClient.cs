@@ -304,11 +304,8 @@ namespace Reddit.Api.Client
             return true;
         }
 
-        /// <summary>
-        /// Ensures the client is authenticated before making a request.
-        /// Falls back to the token refresh function if credentials aren't available.
-        /// </summary>
-        protected async Task EnsureAuthenticatedAsync(CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task EnsureAuthenticatedAsync(CancellationToken cancellationToken = default)
         {
             if (IsAuthenticated)
             {
@@ -427,10 +424,8 @@ namespace Reddit.Api.Client
             }
         }
 
-        /// <summary>
-        /// Optionally authenticates if credentials or token refresh function are available.
-        /// </summary>
-        protected async Task TryAuthenticateAsync(CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task TryAuthenticateAsync(CancellationToken cancellationToken = default)
         {
             if (IsAuthenticated)
             {
