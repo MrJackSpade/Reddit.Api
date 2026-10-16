@@ -134,7 +134,7 @@ namespace Reddit.Api.Client
                 .Add("id", ids != null ? string.Join(",", ids) : null)
                 .Add("url", url)
                 .Build();
-            return await this.GetAsync<Listing<Thing<Link>>>($"/api/info{query}", cancellationToken);
+            return await this.GetAsync<Listing<Thing<Link>>>($"/api/info{query}", cancellationToken, RequestRoute.WebSession);
         }
 
         /// <inheritdoc />
@@ -145,7 +145,7 @@ namespace Reddit.Api.Client
             string query = new QueryStringBuilder()
                 .Add("id", string.Join(",", ids))
                 .Build();
-            return await this.GetAsync<Listing<Thing<Comment>>>($"/api/info{query}", cancellationToken);
+            return await this.GetAsync<Listing<Thing<Comment>>>($"/api/info{query}", cancellationToken, RequestRoute.WebSession);
         }
 
         /// <inheritdoc />
