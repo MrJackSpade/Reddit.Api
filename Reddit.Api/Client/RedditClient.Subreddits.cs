@@ -80,7 +80,7 @@ namespace Reddit.Api.Client
                 queryString += $"&q={Uri.EscapeDataString(query)}";
             }
 
-            return await this.GetAsync<Listing<Thing<Subreddit>>>($"/subreddits/search{queryString}", cancellationToken);
+            return await this.GetAsync<Listing<Thing<Subreddit>>>($"/subreddits/search{queryString}", cancellationToken, RequestRoute.WebSession);
         }
 
         /// <inheritdoc />

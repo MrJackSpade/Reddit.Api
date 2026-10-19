@@ -11,7 +11,7 @@ namespace Reddit.Api.Client
         {
             await this.TryAuthenticateAsync(cancellationToken);
             string query = parameters.ToQueryString();
-            return await this.GetAsync<Listing<Thing<Link>>>($"/search{query}", cancellationToken);
+            return await this.GetAsync<Listing<Thing<Link>>>($"/search{query}", cancellationToken, RequestRoute.WebSession);
         }
 
         /// <inheritdoc />
@@ -23,7 +23,7 @@ namespace Reddit.Api.Client
             parameters.RestrictSr = true;
             string query = parameters.ToQueryString();
 
-            return await this.GetAsync<Listing<Thing<Link>>>($"/r/{subreddit}/search{query}", cancellationToken);
+            return await this.GetAsync<Listing<Thing<Link>>>($"/r/{subreddit}/search{query}", cancellationToken, RequestRoute.WebSession);
         }
     }
 }
