@@ -19,6 +19,8 @@ namespace Reddit.Api.Client
 
         private const string PublicBaseUrl = "https://www.reddit.com";
 
+        private const string OldBaseUrl = "https://old.reddit.com";
+
         private const string TokenUrl = "https://www.reddit.com/api/v1/access_token";
 
         private readonly RedditCredentials _credentials;
@@ -493,11 +495,11 @@ namespace Reddit.Api.Client
         private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken)
         {
             BearerToken? session = IsAuthenticated ? _token : null;
-            bool useWebSession = route == RequestRoute.WebSession && session?.SessionCookies != null;
+            bool useWebSession = (route is RequestRoute.WebSession or RequestRoute.OldWebSession) && session?.SessionCookies != null;
 
             string url = session != null && !useWebSession
                 ? $"{OAuthBaseUrl}{endpoint}"
-                : JsonUrl(endpoint);
+                : JsonUrl(route == RequestRoute.OldWebSession ? OldBaseUrl : PublicBaseUrl, endpoint);
 
             using HttpRequestMessage request = new(method, url);
             request.Content = createContent?.Invoke();
@@ -516,14 +518,15 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
-        /// The www.reddit.com form of an endpoint, which serves JSON via a .json suffix on the path.
+        /// The website form of an endpoint on <paramref name="baseUrl"/>, which serves JSON via a
+        /// .json suffix on the path.
         /// </summary>
-        private static string JsonUrl(string endpoint)
+        private static string JsonUrl(string baseUrl, string endpoint)
         {
             string[] parts = endpoint.Split('?', 2);
             return parts.Length == 1
-                ? $"{PublicBaseUrl}{parts[0]}.json"
-                : $"{PublicBaseUrl}{parts[0]}.json?{parts[1]}";
+                ? $"{baseUrl}{parts[0]}.json"
+                : $"{baseUrl}{parts[0]}.json?{parts[1]}";
         }
 
         private StringContent JsonContent(object body)

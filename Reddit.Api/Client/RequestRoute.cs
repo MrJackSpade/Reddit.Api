@@ -15,6 +15,12 @@ namespace Reddit.Api.Client
         /// otherwise the same as <see cref="Api"/>. Used for endpoints Reddit refuses to
         /// browser tokens on oauth.reddit.com (comment threads, /api/info, search).
         /// </summary>
-        WebSession
+        WebSession,
+
+        /// <summary>
+        /// As <see cref="WebSession"/>, but on old.reddit.com. Used for endpoints Reddit also
+        /// refuses to the browser session on www.reddit.com (/api/morechildren).
+        /// </summary>
+        OldWebSession
     }
 }

@@ -167,7 +167,7 @@ namespace Reddit.Api.Client
                 .Add("depth", depth)
                 .Build();
 
-            ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.WebSession);
+            ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.OldWebSession);
             CheckApiResponse(response);
 
             // Parse the response - it contains things with different kinds
