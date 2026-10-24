@@ -30,6 +30,12 @@ namespace Reddit.Api.Models.Enums
         Qa,
 
         [JsonStringEnumMemberName("live")]
-        Live
+        Live,
+
+        /// <summary>
+        /// Reddit's value for a subreddit's suggested_comment_sort when the subreddit has none.
+        /// </summary>
+        [JsonStringEnumMemberName("blank")]
+        Blank
     }
 }

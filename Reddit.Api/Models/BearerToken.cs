@@ -10,7 +10,7 @@ namespace Reddit.Api.Models
     /// <param name="SessionCookies">
     /// The complete reddit.com <c>Cookie</c> header of the browser session the token came from
     /// (token_v2 logins only). Reddit's network security refuses comment threads to browser
-    /// tokens on oauth.reddit.com, but serves them on www.reddit.com to requests carrying the
+    /// tokens on oauth.reddit.com, but serves them on old.reddit.com to requests carrying the
     /// full browser session, so <see cref="Client.RequestRoute.WebSession"/> endpoints use this.
     /// </param>
     public record BearerToken(string AccessToken, string AuthenticatedUser, DateTime? Expiration = null, string? SessionCookies = null)

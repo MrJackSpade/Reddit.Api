@@ -19,7 +19,7 @@ namespace Reddit.Api.Client
 
         private const string PublicBaseUrl = "https://www.reddit.com";
 
-        private const string OldBaseUrl = "https://old.reddit.com";
+        private const string WebSessionBaseUrl = "https://old.reddit.com";
 
         private const string TokenUrl = "https://www.reddit.com/api/v1/access_token";
 
@@ -495,11 +495,11 @@ namespace Reddit.Api.Client
         private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken)
         {
             BearerToken? session = IsAuthenticated ? _token : null;
-            bool useWebSession = (route is RequestRoute.WebSession or RequestRoute.OldWebSession) && session?.SessionCookies != null;
+            bool useWebSession = route == RequestRoute.WebSession && session?.SessionCookies != null;
 
-            string url = session != null && !useWebSession
-                ? $"{OAuthBaseUrl}{endpoint}"
-                : JsonUrl(route == RequestRoute.OldWebSession ? OldBaseUrl : PublicBaseUrl, endpoint);
+            string url = useWebSession ? JsonUrl(WebSessionBaseUrl, endpoint)
+                : session != null ? $"{OAuthBaseUrl}{endpoint}"
+                : JsonUrl(PublicBaseUrl, endpoint);
 
             using HttpRequestMessage request = new(method, url);
             request.Content = createContent?.Invoke();
