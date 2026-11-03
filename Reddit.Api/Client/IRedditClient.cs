@@ -235,7 +235,8 @@ namespace Reddit.Api.Client
         Task<Listing<Thing<Comment>>?> GetCommentInfoAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// GET /api/morechildren - Load more comments.
+        /// GET /api/morechildren - Load more comments. Requested without the .json suffix (Reddit
+        /// blocks that form); the loaded comments' data is fetched from /api/info.
         /// </summary>
         Task<List<Thing<Comment>>?> GetMoreChildrenAsync(string linkFullname, IEnumerable<string> children, string? sort = null, int? depth = null, CancellationToken cancellationToken = default);
 

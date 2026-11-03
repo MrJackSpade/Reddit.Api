@@ -334,9 +334,13 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Makes a GET request to the Reddit API.
         /// </summary>
-        protected async Task<T?> GetAsync<T>(string endpoint, CancellationToken cancellationToken, RequestRoute route = RequestRoute.Api)
+        /// <param name="jsonSuffix">
+        /// Whether the website form of the URL (browser session or logged-out) gets the .json path
+        /// suffix. Reddit's network security blocks some endpoints only in their .json form.
+        /// </param>
+        protected async Task<T?> GetAsync<T>(string endpoint, CancellationToken cancellationToken, RequestRoute route = RequestRoute.Api, bool jsonSuffix = true)
         {
-            string content = await this.SendAsync(HttpMethod.Get, endpoint, route, null, cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Get, endpoint, route, null, cancellationToken, jsonSuffix);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -470,17 +474,17 @@ namespace Reddit.Api.Client
         /// once and the request rebuilt from scratch, so the retry is routed and authorized for
         /// the new session rather than replaying the one that was rejected.
         /// </summary>
-        private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken)
+        private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken, bool jsonSuffix = true)
         {
             await this.ThrottleAsync(cancellationToken);
 
-            (HttpResponseMessage response, string url) = await this.SendOnceAsync(method, endpoint, route, createContent, cancellationToken);
+            (HttpResponseMessage response, string url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, cancellationToken);
 
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
                 && await this.RefreshSessionAsync())
             {
                 response.Dispose();
-                (response, url) = await this.SendOnceAsync(method, endpoint, route, createContent, cancellationToken);
+                (response, url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, cancellationToken);
             }
 
             using (response)
@@ -492,14 +496,14 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Builds, authorizes and sends a single request for the current session.
         /// </summary>
-        private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken)
+        private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, bool jsonSuffix, CancellationToken cancellationToken)
         {
             BearerToken? session = IsAuthenticated ? _token : null;
             bool useWebSession = route == RequestRoute.WebSession && session?.SessionCookies != null;
 
-            string url = useWebSession ? JsonUrl(WebSessionBaseUrl, endpoint)
+            string url = useWebSession ? WebsiteUrl(WebSessionBaseUrl, endpoint, jsonSuffix)
                 : session != null ? $"{OAuthBaseUrl}{endpoint}"
-                : JsonUrl(PublicBaseUrl, endpoint);
+                : WebsiteUrl(PublicBaseUrl, endpoint, jsonSuffix);
 
             using HttpRequestMessage request = new(method, url);
             request.Content = createContent?.Invoke();
@@ -518,11 +522,16 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
-        /// The website form of an endpoint on <paramref name="baseUrl"/>, which serves JSON via a
-        /// .json suffix on the path.
+        /// The website form of an endpoint on <paramref name="baseUrl"/>. The website serves JSON via
+        /// a .json suffix on the path, added when <paramref name="jsonSuffix"/> is set.
         /// </summary>
-        private static string JsonUrl(string baseUrl, string endpoint)
+        private static string WebsiteUrl(string baseUrl, string endpoint, bool jsonSuffix)
         {
+            if (!jsonSuffix)
+            {
+                return $"{baseUrl}{endpoint}";
+            }
+
             string[] parts = endpoint.Split('?', 2);
             return parts.Length == 1
                 ? $"{baseUrl}{parts[0]}.json"

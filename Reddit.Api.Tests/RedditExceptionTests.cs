@@ -93,6 +93,33 @@ namespace Reddit.Api.Tests
             Assert.AreEqual("forbidden body", ex.ResponseBody);
             Assert.IsInstanceOfType<RedditException>(ex);
             StringAssert.Contains(ex.Message, "403");
+            StringAssert.EndsWith(ex.Message, "Reddit responded: forbidden body");
+        }
+
+        [TestMethod]
+        public void RedditHttpException_MessageUsesHtmlPageTitle()
+        {
+            RedditHttpException ex = new(System.Net.HttpStatusCode.Forbidden, "https://old.reddit.com/api/x.json",
+                "<!doctype html><html><head><title>\n  Blocked &amp; denied\n</title></head><body>...</body></html>");
+
+            StringAssert.EndsWith(ex.Message, "Reddit responded: Blocked & denied");
+        }
+
+        [TestMethod]
+        public void RedditHttpException_MessageUsesVisibleTextOfUntitledHtml()
+        {
+            RedditHttpException ex = new(System.Net.HttpStatusCode.Forbidden, "https://old.reddit.com/api/x.json",
+                "<body class=\"theme-beta\"><div><style>.a{--x:1rem}</style><script>var x=1;</script><h1>You've been blocked</h1> <p>by network security.</p></div></body>");
+
+            StringAssert.EndsWith(ex.Message, "Reddit responded: You've been blocked by network security.");
+        }
+
+        [TestMethod]
+        public void RedditHttpException_EmptyBodyAddsNoReason()
+        {
+            RedditHttpException ex = new(System.Net.HttpStatusCode.Forbidden, "https://old.reddit.com/api/x.json", "");
+
+            StringAssert.EndsWith(ex.Message, "failed with status 403 (Forbidden).");
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Reddit.Api.Exceptions
 {
@@ -10,7 +11,7 @@ namespace Reddit.Api.Exceptions
     public sealed class RedditHttpException : RedditException
     {
         public RedditHttpException(HttpStatusCode statusCode, string url, string? responseBody)
-            : base(BuildMessage(statusCode, url))
+            : base(BuildMessage(statusCode, url, responseBody))
         {
             this.StatusCode = statusCode;
             this.Url = url;
@@ -32,9 +33,40 @@ namespace Reddit.Api.Exceptions
         /// </summary>
         public string? ResponseBody { get; }
 
-        private static string BuildMessage(HttpStatusCode statusCode, string url)
+        private static string BuildMessage(HttpStatusCode statusCode, string url, string? responseBody)
         {
-            return $"Reddit API request to '{url}' failed with status {(int)statusCode} ({statusCode}).";
+            string message = $"Reddit API request to '{url}' failed with status {(int)statusCode} ({statusCode}).";
+            string? reason = DescribeBody(responseBody);
+            return reason == null ? message : $"{message} Reddit responded: {reason}";
+        }
+
+        /// <summary>
+        /// What Reddit said in a failed response. Reddit's block pages are HTML, so for HTML this
+        /// is the page's title, or its visible text when it has none; otherwise the body itself.
+        /// Whitespace is collapsed either way.
+        /// </summary>
+        private static string? DescribeBody(string? responseBody)
+        {
+            if (string.IsNullOrWhiteSpace(responseBody))
+            {
+                return null;
+            }
+
+            const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.Singleline;
+            string text = responseBody;
+
+            if (Regex.IsMatch(text, @"<(html|body|div|head)\b", Options))
+            {
+                Match title = Regex.Match(text, @"<title[^>]*>(.*?)</title>", Options);
+
+                text = title.Success
+                    ? title.Groups[1].Value
+                    : Regex.Replace(Regex.Replace(text, @"<(style|script)\b.*?</\1>", " ", Options), @"<[^>]+>", " ");
+
+                text = WebUtility.HtmlDecode(text);
+            }
+
+            return Regex.Replace(text, @"\s+", " ").Trim();
         }
     }
 }

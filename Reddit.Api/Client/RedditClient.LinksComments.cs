@@ -167,28 +167,40 @@ namespace Reddit.Api.Client
                 .Add("depth", depth)
                 .Build();
 
-            ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.WebSession);
+            // Reddit's network security blocks /api/morechildren.json, so the endpoint is requested
+            // without the suffix. That form renders each comment as HTML, so it is used for which
+            // comments were loaded and in what order, and the comments' data comes from /api/info.
+            ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.WebSession, jsonSuffix: false);
             CheckApiResponse(response);
 
-            // Parse the response - it contains things with different kinds
-            List<Thing<Comment>> result = new();
-            if (response?.Json?.Data?.Things != null)
+            if (response?.Json?.Data?.Things == null)
             {
-                foreach (MoreChildrenThing thing in response.Json.Data.Things)
+                throw new InvalidOperationException($"Reddit's /api/morechildren response for {linkFullname} has no things list.");
+            }
+
+            List<string> commentNames = response.Json.Data.Things
+                .Where(thing => thing.Kind == ThingKind.Comment)
+                .Select(thing => thing.Data?.Id ?? throw new InvalidOperationException($"Reddit's /api/morechildren response for {linkFullname} has a comment without data."))
+                .ToList();
+
+            Dictionary<string, Thing<Comment>> comments = [];
+
+            // /api/info returns at most 100 things per request.
+            foreach (string[] batch in commentNames.Chunk(100))
+            {
+                Listing<Thing<Comment>>? info = await this.GetCommentInfoAsync(batch, cancellationToken);
+
+                foreach (Thing<Comment> thing in info?.Data?.Children ?? [])
                 {
-                    if (thing.Kind == ThingKind.Comment && thing.Data != null)
-                    {
-                        string json = JsonSerializer.Serialize(thing.Data, _jsonOptions);
-                        Comment? comment = JsonSerializer.Deserialize<Comment>(json, _jsonOptions);
-                        if (comment != null)
-                        {
-                            result.Add(new Thing<Comment> { Kind = ThingKind.Comment, Data = comment });
-                        }
-                    }
+                    comments[thing.Data!.Name] = thing;
                 }
             }
 
-            return result;
+            return commentNames
+                .Select(name => comments.TryGetValue(name, out Thing<Comment>? comment)
+                    ? comment
+                    : throw new InvalidOperationException($"Reddit's /api/info returned no data for comment {name} loaded by /api/morechildren on {linkFullname}."))
+                .ToList();
         }
 
         /// <inheritdoc />
