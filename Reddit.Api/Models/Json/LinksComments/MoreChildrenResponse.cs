@@ -41,5 +41,11 @@ namespace Reddit.Api.Models.Json.LinksComments
         /// </summary>
         [JsonPropertyName("parent")]
         public string Parent { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The thing rendered as old.reddit.com HTML.
+        /// </summary>
+        [JsonPropertyName("content")]
+        public string Content { get; set; } = string.Empty;
     }
 }

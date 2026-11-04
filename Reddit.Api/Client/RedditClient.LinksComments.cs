@@ -165,11 +165,14 @@ namespace Reddit.Api.Client
                 .Add("limit_children", false)
                 .Add("sort", sort)
                 .Add("depth", depth)
+                // Unescaped markup in the rendered things' content.
+                .Add("raw_json", 1)
                 .Build();
 
             // Reddit's network security blocks /api/morechildren.json, so the endpoint is requested
-            // without the suffix. That form renders each comment as HTML, so it is used for which
-            // comments were loaded and in what order, and the comments' data comes from /api/info.
+            // without the suffix. That form renders each thing as HTML, so it is used for which
+            // things were loaded and in what order: comments' data comes from /api/info, and the
+            // deeper "more" placeholders are read from their markup.
             ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.WebSession, jsonSuffix: false);
             CheckApiResponse(response);
 
@@ -178,9 +181,24 @@ namespace Reddit.Api.Client
                 throw new InvalidOperationException($"Reddit's /api/morechildren response for {linkFullname} has no things list.");
             }
 
-            List<string> commentNames = response.Json.Data.Things
+            List<MoreChildrenThing> things = response.Json.Data.Things;
+
+            foreach (MoreChildrenThing thing in things)
+            {
+                if (thing.Data == null)
+                {
+                    throw new InvalidOperationException($"Reddit's /api/morechildren response for {linkFullname} has a {thing.Kind} without data.");
+                }
+
+                if (thing.Kind is not (ThingKind.Comment or ThingKind.More))
+                {
+                    throw new InvalidOperationException($"Reddit's /api/morechildren response for {linkFullname} has an unexpected {thing.Kind} ({thing.Data.Id}).");
+                }
+            }
+
+            List<string> commentNames = things
                 .Where(thing => thing.Kind == ThingKind.Comment)
-                .Select(thing => thing.Data?.Id ?? throw new InvalidOperationException($"Reddit's /api/morechildren response for {linkFullname} has a comment without data."))
+                .Select(thing => thing.Data!.Id)
                 .ToList();
 
             Dictionary<string, Thing<Comment>> comments = [];
@@ -196,10 +214,12 @@ namespace Reddit.Api.Client
                 }
             }
 
-            return commentNames
-                .Select(name => comments.TryGetValue(name, out Thing<Comment>? comment)
-                    ? comment
-                    : throw new InvalidOperationException($"Reddit's /api/info returned no data for comment {name} loaded by /api/morechildren on {linkFullname}."))
+            return things
+                .Select(thing => thing.Kind == ThingKind.More
+                    ? new Thing<Comment> { Kind = ThingKind.More, Data = RenderedMoreParser.Parse(thing.Data!) }
+                    : comments.TryGetValue(thing.Data!.Id, out Thing<Comment>? comment)
+                        ? comment
+                        : throw new InvalidOperationException($"Reddit's /api/info returned no data for comment {thing.Data.Id} loaded by /api/morechildren on {linkFullname}."))
                 .ToList();
         }
 
