@@ -365,9 +365,10 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Makes a POST request with form data to the Reddit API.
         /// </summary>
-        protected async Task<T?> PostFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        /// <param name="jsonSuffix">See <see cref="GetAsync{T}"/>.</param>
+        protected async Task<T?> PostFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken, RequestRoute route = RequestRoute.Api, bool jsonSuffix = true)
         {
-            string content = await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Post, endpoint, route, () => new FormUrlEncodedContent(formData), cancellationToken, jsonSuffix);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 

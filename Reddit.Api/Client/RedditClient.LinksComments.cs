@@ -158,22 +158,32 @@ namespace Reddit.Api.Client
         {
             await this.TryAuthenticateAsync(cancellationToken);
 
-            string query = new QueryStringBuilder()
-                .Add("api_type", "json")
-                .Add("link_id", linkFullname)
-                .Add("children", string.Join(",", children))
-                .Add("limit_children", false)
-                .Add("sort", sort)
-                .Add("depth", depth)
-                // Unescaped markup in the rendered things' content.
-                .Add("raw_json", 1)
-                .Build();
+            // POSTed as a form, as old.reddit.com's own page does: a large "more" lists over a
+            // thousand children, which as a query string exceeds Reddit's URL length limit (414).
+            Dictionary<string, string> formData = new()
+            {
+                ["api_type"] = "json",
+                ["link_id"] = linkFullname,
+                ["children"] = string.Join(",", children),
+                ["limit_children"] = "false"
+            };
+
+            if (!string.IsNullOrEmpty(sort))
+            {
+                formData["sort"] = sort;
+            }
+
+            if (depth != null)
+            {
+                formData["depth"] = depth.Value.ToString();
+            }
 
             // Reddit's network security blocks /api/morechildren.json, so the endpoint is requested
             // without the suffix. That form renders each thing as HTML, so it is used for which
             // things were loaded and in what order: comments' data comes from /api/info, and the
-            // deeper "more" placeholders are read from their markup.
-            ApiResponse<MoreChildrenResponseData>? response = await this.GetAsync<ApiResponse<MoreChildrenResponseData>>($"/api/morechildren{query}", cancellationToken, RequestRoute.WebSession, jsonSuffix: false);
+            // deeper "more" placeholders are read from their markup. raw_json=1 keeps that markup
+            // unescaped.
+            ApiResponse<MoreChildrenResponseData>? response = await this.PostFormAsync<ApiResponse<MoreChildrenResponseData>>("/api/morechildren?raw_json=1", formData, cancellationToken, RequestRoute.WebSession, jsonSuffix: false);
             CheckApiResponse(response);
 
             if (response?.Json?.Data?.Things == null)
