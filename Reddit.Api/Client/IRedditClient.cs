@@ -131,9 +131,19 @@ namespace Reddit.Api.Client
         Task<Listing<Thing<Link>>?> GetBestAsync(ListingParameters? parameters = null, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// GET /by_id/{names} - Get posts by fullname IDs.
+        /// Gets posts by fullname ID, one request per post. Posts Reddit cannot return are left out.
         /// </summary>
         Task<Listing<Thing<Link>>?> GetByIdAsync(IEnumerable<string> fullnames, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the "new" sort of a listing, e.g. r/pics/new, new or user/name/m/multi/new, one request per post.
+        /// </summary>
+        Task<Listing<Thing<Link>>?> GetNewPostsAsync(string path, ListingParameters? parameters = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets one post by ID or fullname through its thread. Null when Reddit cannot return it (gone, or a banned or private subreddit).
+        /// </summary>
+        Task<Thing<Link>?> GetPostAsync(string idOrFullname, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// GET /comments/{article} - Get post comments.
@@ -225,20 +235,10 @@ namespace Reddit.Api.Client
         Task<bool> FollowPostAsync(string fullname, bool follow, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// GET /api/info - Get info about things by ID or URL.
+        /// POST /api/morechildren (rendered HTML form) - Load more comments and deeper "more" placeholders.
         /// </summary>
-        Task<Listing<Thing<Link>>?> GetInfoAsync(IEnumerable<string>? ids = null, string? url = null, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// GET /api/info - Get info about comments by fullname IDs.
-        /// </summary>
-        Task<Listing<Thing<Comment>>?> GetCommentInfoAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// GET /api/morechildren - Load more comments. Requested without the .json suffix (Reddit
-        /// blocks that form); the loaded comments' data is fetched from /api/info.
-        /// </summary>
-        Task<List<Thing<Comment>>?> GetMoreChildrenAsync(string linkFullname, IEnumerable<string> children, string? sort = null, int? depth = null, CancellationToken cancellationToken = default);
+        /// <param name="subreddit">The post's subreddit, without which Reddit omits user flair.</param>
+        Task<List<Thing<Comment>>?> GetMoreChildrenAsync(string linkFullname, IEnumerable<string> children, string? sort = null, int? depth = null, string? subreddit = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// POST /api/hide - Hide a link.

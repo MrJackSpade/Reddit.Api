@@ -23,13 +23,10 @@ namespace Reddit.Api.Tests
 
             var postFullname = listing.Data.Children[0].Data!.Name;
 
-            var info = await Client!.GetInfoAsync(ids: new[] { postFullname });
+            var post = await Client!.GetPostAsync(postFullname);
 
-            Assert.IsNotNull(info);
-            Assert.IsNotNull(info.Data);
-            Assert.IsNotNull(info.Data.Children);
-            Assert.IsTrue(info.Data.Children.Count > 0);
-            Assert.AreEqual(postFullname, info.Data.Children[0].Data!.Name);
+            Assert.IsNotNull(post);
+            Assert.AreEqual(postFullname, post.Data!.Name);
         }
 
         [TestMethod]

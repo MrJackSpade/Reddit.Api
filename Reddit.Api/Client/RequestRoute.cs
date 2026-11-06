@@ -1,21 +1,27 @@
 namespace Reddit.Api.Client
 {
     /// <summary>
-    /// Selects which Reddit host an authenticated request is sent to.
+    /// Selects which Reddit host a request is sent to. Each route's calls live in their own
+    /// partial of <see cref="RedditClient"/> (Client/OAuth, Client/Www, Client/Old), and each of
+    /// those partials documents why its calls are on that host.
     /// </summary>
     public enum RequestRoute
     {
         /// <summary>
         /// oauth.reddit.com with the bearer token.
         /// </summary>
-        Api,
+        OAuth,
 
         /// <summary>
-        /// old.reddit.com JSON with the browser session cookies, when the session has them;
-        /// otherwise the same as <see cref="Api"/>. Used for endpoints Reddit refuses to
-        /// browser tokens on oauth.reddit.com (comment threads, /api/info, /api/morechildren,
-        /// search). old.reddit.com because www.reddit.com refuses /api/ paths to the session.
+        /// www.reddit.com with the browser session cookies, when the session has them;
+        /// otherwise the same as <see cref="OAuth"/>.
         /// </summary>
-        WebSession
+        Www,
+
+        /// <summary>
+        /// old.reddit.com with the browser session cookies, when the session has them;
+        /// otherwise the same as <see cref="OAuth"/>.
+        /// </summary>
+        Old
     }
 }

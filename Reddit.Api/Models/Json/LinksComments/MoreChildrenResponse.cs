@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 namespace Reddit.Api.Models.Json.LinksComments
 {
     /// <summary>
-    /// Response data from GET /api/morechildren, requested without the .json suffix. In that form
-    /// Reddit renders each thing as HTML; only the identifying fields are read from it.
+    /// Response data from POST /api/morechildren, requested without the .json suffix. In that form
+    /// Reddit renders each thing as HTML.
     /// </summary>
     public class MoreChildrenResponseData
     {
@@ -26,10 +26,28 @@ namespace Reddit.Api.Models.Json.LinksComments
     }
 
     /// <summary>
-    /// The identifying fields of a rendered morechildren thing.
+    /// A rendered morechildren thing.
     /// </summary>
     public class MoreChildrenThingData
     {
+        /// <summary>
+        /// The thing rendered as old.reddit.com HTML.
+        /// </summary>
+        [JsonPropertyName("content")]
+        public string Content { get; set; } = string.Empty;
+
+        /// <summary>
+        /// A comment's rendered body.
+        /// </summary>
+        [JsonPropertyName("contentHTML")]
+        public string ContentHtml { get; set; } = string.Empty;
+
+        /// <summary>
+        /// A comment's markdown body.
+        /// </summary>
+        [JsonPropertyName("contentText")]
+        public string ContentText { get; set; } = string.Empty;
+
         /// <summary>
         /// The thing's fullname, e.g. t1_abc123.
         /// </summary>
@@ -37,15 +55,15 @@ namespace Reddit.Api.Models.Json.LinksComments
         public string Id { get; set; } = string.Empty;
 
         /// <summary>
+        /// The fullname of the post the thing belongs to.
+        /// </summary>
+        [JsonPropertyName("link")]
+        public string Link { get; set; } = string.Empty;
+
+        /// <summary>
         /// The fullname of the thing's parent.
         /// </summary>
         [JsonPropertyName("parent")]
         public string Parent { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The thing rendered as old.reddit.com HTML.
-        /// </summary>
-        [JsonPropertyName("content")]
-        public string Content { get; set; } = string.Empty;
     }
 }

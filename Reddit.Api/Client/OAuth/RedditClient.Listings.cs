@@ -15,62 +15,6 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetByIdAsync(IEnumerable<string> fullnames, CancellationToken cancellationToken = default)
-        {
-            await this.TryAuthenticateAsync(cancellationToken);
-            string names = string.Join(",", fullnames);
-            return await this.GetAsync<Listing<Thing<Link>>>($"/by_id/{names}", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<(Thing<Link>? Post, Listing<Thing<Comment>>? Comments)> GetCommentsAsync(
-            string articleId,
-            string? commentId = null,
-            string? sort = null,
-            int? limit = null,
-            int? depth = null,
-            int? context = null,
-            CancellationToken cancellationToken = default)
-        {
-            await this.TryAuthenticateAsync(cancellationToken);
-
-            string query = new QueryStringBuilder()
-                .Add("comment", commentId)
-                .Add("sort", sort)
-                .Add("limit", limit)
-                .Add("depth", depth)
-                .Add("context", context)
-                .Build();
-
-            string endpoint = $"/comments/{articleId}{query}";
-
-            // Reddit returns an array of two listings: [post, comments]
-            JsonElement result = await this.GetAsync<JsonElement>(endpoint, cancellationToken, RequestRoute.WebSession);
-
-            if (result.ValueKind != JsonValueKind.Array)
-            {
-                return (null, null);
-            }
-
-            Thing<Link>? post = null;
-            Listing<Thing<Comment>>? comments = null;
-
-            List<JsonElement> elements = result.EnumerateArray().ToList();
-            if (elements.Count >= 1)
-            {
-                Listing<Thing<Link>>? postListing = JsonSerializer.Deserialize<Listing<Thing<Link>>>(elements[0].GetRawText(), _jsonOptions);
-                post = postListing?.Data?.Children?.FirstOrDefault();
-            }
-
-            if (elements.Count >= 2)
-            {
-                comments = JsonSerializer.Deserialize<Listing<Thing<Comment>>>(elements[1].GetRawText(), _jsonOptions);
-            }
-
-            return (post, comments);
-        }
-
-        /// <inheritdoc />
         public async Task<Listing<Thing<Link>>?> GetControversialAsync(string? subreddit = null, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
         {
             await this.TryAuthenticateAsync(cancellationToken);

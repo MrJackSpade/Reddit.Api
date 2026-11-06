@@ -17,9 +17,9 @@ namespace Reddit.Api.Client
     {
         private const string OAuthBaseUrl = "https://oauth.reddit.com";
 
-        private const string PublicBaseUrl = "https://www.reddit.com";
+        private const string WwwBaseUrl = "https://www.reddit.com";
 
-        private const string WebSessionBaseUrl = "https://old.reddit.com";
+        private const string OldBaseUrl = "https://old.reddit.com";
 
         private const string TokenUrl = "https://www.reddit.com/api/v1/access_token";
 
@@ -64,6 +64,11 @@ namespace Reddit.Api.Client
 
         /// <inheritdoc />
         public bool IsAuthenticated => _token != null && !_token.IsExpired;
+
+        /// <summary>
+        /// Whether the current session has the browser cookies the website routes need.
+        /// </summary>
+        private bool HasWebSession => IsAuthenticated && _token!.SessionCookies != null;
 
         /// <summary>
         /// Minimum delay between requests in milliseconds.
@@ -302,7 +307,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken)
         {
-            await this.SendAsync(HttpMethod.Delete, endpoint, RequestRoute.Api, null, cancellationToken);
+            await this.SendAsync(HttpMethod.Delete, endpoint, RequestRoute.OAuth, null, cancellationToken);
             return true;
         }
 
@@ -338,10 +343,18 @@ namespace Reddit.Api.Client
         /// Whether the website form of the URL (browser session or logged-out) gets the .json path
         /// suffix. Reddit's network security blocks some endpoints only in their .json form.
         /// </param>
-        protected async Task<T?> GetAsync<T>(string endpoint, CancellationToken cancellationToken, RequestRoute route = RequestRoute.Api, bool jsonSuffix = true)
+        protected async Task<T?> GetAsync<T>(string endpoint, CancellationToken cancellationToken, RequestRoute route = RequestRoute.OAuth, bool jsonSuffix = true)
         {
             string content = await this.SendAsync(HttpMethod.Get, endpoint, route, null, cancellationToken, jsonSuffix);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
+        }
+
+        /// <summary>
+        /// Makes a GET request for a page of the website, returning its HTML.
+        /// </summary>
+        protected async Task<string> GetHtmlAsync(string endpoint, RequestRoute route, CancellationToken cancellationToken)
+        {
+            return await this.SendAsync(HttpMethod.Get, endpoint, route, null, cancellationToken, jsonSuffix: false);
         }
 
         /// <summary>
@@ -349,7 +362,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PatchJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
         {
-            string content = await this.SendAsync(HttpMethod.Patch, endpoint, RequestRoute.Api, () => this.JsonContent(body), cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Patch, endpoint, RequestRoute.OAuth, () => this.JsonContent(body), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -358,7 +371,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PostJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
         {
-            string content = await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Api, () => this.JsonContent(body), cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.OAuth, () => this.JsonContent(body), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -366,7 +379,7 @@ namespace Reddit.Api.Client
         /// Makes a POST request with form data to the Reddit API.
         /// </summary>
         /// <param name="jsonSuffix">See <see cref="GetAsync{T}"/>.</param>
-        protected async Task<T?> PostFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken, RequestRoute route = RequestRoute.Api, bool jsonSuffix = true)
+        protected async Task<T?> PostFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken, RequestRoute route = RequestRoute.OAuth, bool jsonSuffix = true)
         {
             string content = await this.SendAsync(HttpMethod.Post, endpoint, route, () => new FormUrlEncodedContent(formData), cancellationToken, jsonSuffix);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
@@ -377,7 +390,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<bool> PostFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
         {
-            await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
+            await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.OAuth, () => new FormUrlEncodedContent(formData), cancellationToken);
             return true;
         }
 
@@ -386,7 +399,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PutJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
         {
-            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.Api, () => this.JsonContent(body), cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.OAuth, () => this.JsonContent(body), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -395,7 +408,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<T?> PutFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
         {
-            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.OAuth, () => new FormUrlEncodedContent(formData), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
@@ -404,7 +417,7 @@ namespace Reddit.Api.Client
         /// </summary>
         protected async Task<bool> PutFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
         {
-            await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.Api, () => new FormUrlEncodedContent(formData), cancellationToken);
+            await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.OAuth, () => new FormUrlEncodedContent(formData), cancellationToken);
             return true;
         }
 
@@ -500,11 +513,11 @@ namespace Reddit.Api.Client
         private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, bool jsonSuffix, CancellationToken cancellationToken)
         {
             BearerToken? session = IsAuthenticated ? _token : null;
-            bool useWebSession = route == RequestRoute.WebSession && session?.SessionCookies != null;
+            bool useWebSession = route != RequestRoute.OAuth && session?.SessionCookies != null;
 
-            string url = useWebSession ? WebsiteUrl(WebSessionBaseUrl, endpoint, jsonSuffix)
+            string url = useWebSession ? WebsiteUrl(route == RequestRoute.Www ? WwwBaseUrl : OldBaseUrl, endpoint, jsonSuffix)
                 : session != null ? $"{OAuthBaseUrl}{endpoint}"
-                : WebsiteUrl(PublicBaseUrl, endpoint, jsonSuffix);
+                : WebsiteUrl(WwwBaseUrl, endpoint, jsonSuffix);
 
             using HttpRequestMessage request = new(method, url);
             request.Content = createContent?.Invoke();
