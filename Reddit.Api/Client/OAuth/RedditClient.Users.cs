@@ -20,26 +20,11 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Thing<User>?> GetUserAboutAsync(string username, CancellationToken cancellationToken = default)
-        {
-            await this.TryAuthenticateAsync(cancellationToken);
-            return await this.GetAsync<Thing<User>>($"/user/{username}/about", cancellationToken);
-        }
-
-        /// <inheritdoc />
         public async Task<Listing<Thing<Comment>>?> GetUserCommentsAsync(string username, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
         {
             await this.TryAuthenticateAsync(cancellationToken);
             string query = parameters?.ToQueryString() ?? string.Empty;
             return await this.GetAsync<Listing<Thing<Comment>>>($"/user/{username}/comments{query}", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<UserDataByIdsResponse?> GetUserDataByIdsAsync(IEnumerable<string> accountIds, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-            string ids = string.Join(",", accountIds);
-            return await this.GetAsync<UserDataByIdsResponse>($"/api/user_data_by_account_ids?ids={ids}", cancellationToken);
         }
 
         /// <inheritdoc />

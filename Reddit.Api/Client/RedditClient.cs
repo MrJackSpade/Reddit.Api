@@ -33,6 +33,8 @@ namespace Reddit.Api.Client
 
         private DateTime _lastRequest = DateTime.MinValue;
 
+        private string? _modhash;
+
         private BearerToken? _token;
 
         private Func<Task<BearerToken?>>? _tokenRefreshFunc;
@@ -147,25 +149,35 @@ namespace Reddit.Api.Client
         public void SetBearerToken(BearerToken token)
         {
             _token = token;
+            _modhash = null;
         }
 
         /// <inheritdoc />
         public async Task<bool> ValidateBearerToken(BearerToken token)
         {
-            string? owner = await this.GetTokenOwner(token.AccessToken);
+            string? owner = await this.GetTokenOwner(token.AccessToken, token.SessionCookies);
             return owner != null;
         }
 
         /// <inheritdoc />
-        public async Task<string?> GetTokenOwner(string accessToken)
+        public async Task<string?> GetTokenOwner(string accessToken, string? sessionCookies = null)
         {
             await this.ThrottleAsync(CancellationToken.None);
 
-            using HttpRequestMessage request = new(HttpMethod.Get, $"{OAuthBaseUrl}/api/v1/me");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            // A browser session is checked on the website, which is where its calls go. OAuth is
+            // only for tokens that have nothing else.
+            using HttpRequestMessage request = new(HttpMethod.Get, sessionCookies != null ? $"{WwwBaseUrl}/api/me.json" : $"{OAuthBaseUrl}/api/v1/me");
 
+            if (sessionCookies != null)
+            {
+                request.Headers.Add("Cookie", sessionCookies);
+            }
+            else
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            }
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request);
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -173,15 +185,52 @@ namespace Reddit.Api.Client
             }
 
             string content = await response.Content.ReadAsStringAsync();
-            MeResponse? me = JsonSerializer.Deserialize<MeResponse>(content, _jsonOptions);
 
-            if (me is null)
+            if (sessionCookies == null)
             {
-                throw new NullReferenceException("No owner returned for token");
+                MeResponse? me = JsonSerializer.Deserialize<MeResponse>(content, _jsonOptions);
+
+                if (me is null)
+                {
+                    throw new NullReferenceException("No owner returned for token");
+                }
+
+                return me.Name;
             }
 
-            return me.Name;
+            // The website wraps the account in { "data": ... }, and answers {} when logged out.
+            using JsonDocument document = JsonDocument.Parse(content);
 
+            return document.RootElement.TryGetProperty("data", out JsonElement data) && data.TryGetProperty("name", out JsonElement name)
+                ? name.GetString()
+                : null;
+        }
+
+        /// <summary>
+        /// The session's modhash, the website's CSRF token. Cached until the session changes.
+        /// </summary>
+        private async Task<string> GetModhashAsync(BearerToken session, CancellationToken cancellationToken)
+        {
+            if (_modhash != null)
+            {
+                return _modhash;
+            }
+
+            using HttpRequestMessage request = new(HttpMethod.Get, $"{WwwBaseUrl}/api/me.json");
+            request.Headers.Add("Cookie", session.SessionCookies);
+
+            using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            string content = await this.ReadValidatedBodyAsync(response, request.RequestUri!.ToString(), cancellationToken);
+
+            using JsonDocument document = JsonDocument.Parse(content);
+
+            _modhash = document.RootElement.TryGetProperty("data", out JsonElement data) && data.TryGetProperty("modhash", out JsonElement modhash)
+                ? modhash.GetString()
+                : null;
+
+            return string.IsNullOrEmpty(_modhash)
+                ? throw new RedditAuthenticationException("Reddit gave no modhash for this session, so it isn't logged in.")
+                : _modhash;
         }
 
         /// <inheritdoc />
@@ -282,6 +331,17 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
+        /// Writes a failed request to the console and the debug output, so failures can be seen while
+        /// driving the app, including the ones a caller goes on to handle.
+        /// </summary>
+        private static void LogError(string message)
+        {
+            string line = $"[Reddit.Api] {DateTime.Now:HH:mm:ss} {message}";
+            Console.Error.WriteLine(line);
+            System.Diagnostics.Debug.WriteLine(line);
+        }
+
+        /// <summary>
         /// Reads a response body, throwing <see cref="RedditHttpException"/> on a non-success status
         /// and <see cref="RedditApiException"/> when the body carries a Reddit error envelope.
         /// This is the single choke point every request flows through so that no API path can
@@ -291,23 +351,31 @@ namespace Reddit.Api.Client
         {
             string content = await response.Content.ReadAsStringAsync(cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                // A non-2xx response may still carry a structured error envelope; prefer that detail.
-                CheckBodyForApiErrors(content);
-                throw new RedditHttpException(response.StatusCode, url, content);
-            }
+                if (!response.IsSuccessStatusCode)
+                {
+                    // A non-2xx response may still carry a structured error envelope; prefer that detail.
+                    CheckBodyForApiErrors(content);
+                    throw new RedditHttpException(response.StatusCode, url, content);
+                }
 
-            CheckBodyForApiErrors(content);
-            return content;
+                CheckBodyForApiErrors(content);
+                return content;
+            }
+            catch (RedditException ex)
+            {
+                LogError($"{response.RequestMessage?.Method} {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
         /// Makes a DELETE request to the Reddit API.
         /// </summary>
-        protected async Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken)
+        protected async Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken, RequestRoute route = RequestRoute.OAuth)
         {
-            await this.SendAsync(HttpMethod.Delete, endpoint, RequestRoute.OAuth, null, cancellationToken);
+            await this.SendAsync(HttpMethod.Delete, endpoint, route, null, cancellationToken);
             return true;
         }
 
@@ -388,9 +456,9 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Makes a POST request with form data, returning no content.
         /// </summary>
-        protected async Task<bool> PostFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        protected async Task<bool> PostFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken, RequestRoute route = RequestRoute.OAuth)
         {
-            await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.OAuth, () => new FormUrlEncodedContent(formData), cancellationToken);
+            await this.SendAsync(HttpMethod.Post, endpoint, route, () => new FormUrlEncodedContent(formData), cancellationToken);
             return true;
         }
 
@@ -406,18 +474,18 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Makes a PUT request with form data to the Reddit API.
         /// </summary>
-        protected async Task<T?> PutFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        protected async Task<T?> PutFormAsync<T>(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken, RequestRoute route = RequestRoute.OAuth)
         {
-            string content = await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.OAuth, () => new FormUrlEncodedContent(formData), cancellationToken);
+            string content = await this.SendAsync(HttpMethod.Put, endpoint, route, () => new FormUrlEncodedContent(formData), cancellationToken);
             return JsonSerializer.Deserialize<T>(content, _jsonOptions);
         }
 
         /// <summary>
         /// Makes a PUT request with form data, returning no content.
         /// </summary>
-        protected async Task<bool> PutFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        protected async Task<bool> PutFormAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken, RequestRoute route = RequestRoute.OAuth)
         {
-            await this.SendAsync(HttpMethod.Put, endpoint, RequestRoute.OAuth, () => new FormUrlEncodedContent(formData), cancellationToken);
+            await this.SendAsync(HttpMethod.Put, endpoint, route, () => new FormUrlEncodedContent(formData), cancellationToken);
             return true;
         }
 
@@ -525,6 +593,12 @@ namespace Reddit.Api.Client
             if (useWebSession)
             {
                 request.Headers.Add("Cookie", session!.SessionCookies);
+
+                // The website refuses anything but a GET without the session's modhash.
+                if (method != HttpMethod.Get)
+                {
+                    request.Headers.Add("X-Modhash", await this.GetModhashAsync(session, cancellationToken));
+                }
             }
             else if (session != null)
             {

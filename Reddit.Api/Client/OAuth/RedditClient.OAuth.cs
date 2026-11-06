@@ -2,6 +2,7 @@ namespace Reddit.Api.Client
 {
     /// <summary>
     /// The calls sent to oauth.reddit.com with the bearer token: every partial in Client/OAuth.
+    /// This route has a deadline: see "Where things are moving" below.
     ///
     /// CONTEXT: why the client is split by host.
     /// Reddit is clamping down on automated access (LLM scraping, as far as we can tell), and
@@ -21,17 +22,25 @@ namespace Reddit.Api.Client
     ///   sort were blocked everywhere as JSON, and threads were still refused on OAuth.
     ///
     /// Where things are moving:
+    /// - Reddit is closing the public API: it announced on 2026-09-30 that access starts closing on
+    ///   2027-01-12 for apps and users that haven't registered, and closes for everyone in March 2027.
+    ///   Deaddit won't register, so everything here has to be off this route before January.
     /// - When something breaks, check www first, for parity with what Reddit's main site serves.
-    ///   old.reddit.com lacks some state (it doesn't track comment reply state, for one).
+    ///   old.reddit.com lacks some state, and is itself being limited to recent users and mods.
     /// - Probe with a throwaway test using the stored session before moving anything, and move a
     ///   call between partials rather than adding a route override inside a feature file.
-    /// - This partial is what still works with the bearer token: listings, inbox, every write
-    ///   (vote, save, comment, submit, message...), multis and user/subreddit lookups. A call only
-    ///   leaves it when Reddit blocks it here.
     ///
-    /// Status of what's left here: the calls the app uses were tested live on 2026-11-06. The
-    /// calls the app does not use (moderation, modmail, wiki, widgets, live threads, emoji, flair)
-    /// were not, so they may already be blocked.
+    /// What's still here that the app uses, and why:
+    /// - GetMediaAssetUploadLeaseAsync (images in comments): /api/media/asset answers 403 on www and
+    ///   old with the session and modhash. It needs the site's real upload path found. BLOCKS MARCH.
+    /// - ComposeMessageAsync (DMs): /api/compose is blocked on www. Reddit replaced PMs with chat, and
+    ///   here it answers RESTRICTED_TO_PM for the accounts tried, so "Message" may already be dead.
+    ///
+    /// Everything else here is library surface the app doesn't call (moderation, modmail, wiki,
+    /// widgets, live threads, emoji, flair, and the typed listing helpers). It hasn't been tested
+    /// live, so it may already be blocked, and it will stop in March if not moved.
+    ///
+    /// /api/unread_message answers 404 here: Reddit retired it with PMs. The app only marks things read.
     /// </summary>
     public partial class RedditClient
     {

@@ -80,7 +80,7 @@ namespace Reddit.Api.Client
         /// Does not mutate client state. Use this to obtain the username before constructing
         /// a <see cref="BearerToken"/> from a freshly retrieved access token.
         /// </summary>
-        Task<string?> GetTokenOwner(string accessToken);
+        Task<string?> GetTokenOwner(string accessToken, string? sessionCookies = null);
 
         #endregion Authentication
 
@@ -136,9 +136,10 @@ namespace Reddit.Api.Client
         Task<Listing<Thing<Link>>?> GetByIdAsync(IEnumerable<string> fullnames, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets the "new" sort of a listing, e.g. r/pics/new, new or user/name/m/multi/new, one request per post.
+        /// Gets the "new" or "rising" sort of a listing, e.g. r/pics/new, rising or user/name/m/multi/new.
+        /// Costs one request per post, except on multis.
         /// </summary>
-        Task<Listing<Thing<Link>>?> GetNewPostsAsync(string path, ListingParameters? parameters = null, CancellationToken cancellationToken = default);
+        Task<Listing<Thing<Link>>?> GetSortedPostsAsync(string path, ListingParameters? parameters = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets one post by ID or fullname through its thread. Null when Reddit cannot return it (gone, or a banned or private subreddit).

@@ -21,29 +21,6 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Thing<Comment>?> DistinguishAsync(string fullname, DistinguishHow how = DistinguishHow.Yes, bool? sticky = null, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["id"] = fullname,
-                ["how"] = how.ToJsonString()
-            };
-
-            if (sticky.HasValue)
-            {
-                formData["sticky"] = sticky.Value.ToString().ToLower();
-            }
-
-            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/distinguish", formData, cancellationToken);
-            CheckApiResponse(response);
-
-            return response?.Json?.Data?.Things?.FirstOrDefault();
-        }
-
-        /// <inheritdoc />
         public async Task<Listing<Thing<object>>?> GetEditedAsync(string subreddit, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);

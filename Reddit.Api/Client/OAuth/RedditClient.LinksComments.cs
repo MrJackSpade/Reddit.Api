@@ -11,107 +11,6 @@ namespace Reddit.Api.Client
     public partial class RedditClient
     {
         /// <inheritdoc />
-        public async Task<Thing<Comment>?> CommentAsync(string parentFullname, RichTextDocument richtext, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["thing_id"] = parentFullname,
-                ["richtext_json"] = JsonSerializer.Serialize(richtext, _jsonOptions)
-            };
-
-            // When using richtext_json, the response is a raw Comment object
-            // rather than the usual {"json":{"data":{"things":[...]}}} wrapper
-            Comment? comment = await this.PostFormAsync<Comment>("/api/comment", formData, cancellationToken);
-
-            if (comment != null)
-            {
-                return new Thing<Comment>
-                {
-                    Kind = Models.Enums.ThingKind.Comment,
-                    Data = comment
-                };
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc />
-        public async Task<Thing<Comment>?> CommentAsync(string parentFullname, string markdown, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["thing_id"] = parentFullname,
-                ["text"] = markdown
-            };
-
-            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/comment", formData, cancellationToken);
-            CheckApiResponse(response);
-            return response?.Json?.Data?.Things?.FirstOrDefault();
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> DeleteThingAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/del", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<Thing<Comment>?> EditAsync(string fullname, RichTextDocument richtext, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["thing_id"] = fullname,
-                ["richtext_json"] = JsonSerializer.Serialize(richtext, _jsonOptions)
-            };
-
-            Comment? comment = await this.PostFormAsync<Comment>("/api/editusertext", formData, cancellationToken);
-
-            if (comment != null)
-            {
-                return new Thing<Comment>
-                {
-                    Kind = Models.Enums.ThingKind.Comment,
-                    Data = comment
-                };
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc />
-        public async Task<Thing<Comment>?> EditAsync(string fullname, string markdown, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["thing_id"] = fullname,
-                ["text"] = markdown
-            };
-
-            ApiResponse<CommentResponseData>? response = await this.PostFormAsync<ApiResponse<CommentResponseData>>("/api/editusertext", formData, cancellationToken);
-            CheckApiResponse(response);
-            return response?.Json?.Data?.Things?.FirstOrDefault();
-        }
-
-        /// <inheritdoc />
         public async Task<bool> FollowPostAsync(string fullname, bool follow, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
@@ -123,32 +22,6 @@ namespace Reddit.Api.Client
             };
 
             return await this.PostFormAsync("/api/follow_post", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> HideAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/hide", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> LockAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/lock", formData, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -178,58 +51,6 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<bool> ReportAsync(
-            string fullname,
-            string? reason = null,
-            string? siteReason = null,
-            string? ruleReason = null,
-            CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["thing_id"] = fullname
-            };
-
-            if (!string.IsNullOrEmpty(reason))
-            {
-                formData["reason"] = reason;
-            }
-
-            if (!string.IsNullOrEmpty(siteReason))
-            {
-                formData["site_reason"] = siteReason;
-            }
-
-            if (!string.IsNullOrEmpty(ruleReason))
-            {
-                formData["rule_reason"] = ruleReason;
-            }
-
-            return await this.PostFormAsync("/api/report", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> SaveAsync(string fullname, string? category = null, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            if (!string.IsNullOrEmpty(category))
-            {
-                formData["category"] = category;
-            }
-
-            return await this.PostFormAsync("/api/save", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
         public async Task<bool> SetContestModeAsync(string fullname, bool state, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);
@@ -242,20 +63,6 @@ namespace Reddit.Api.Client
             };
 
             return await this.PostFormAsync("/api/set_contest_mode", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> SetSendRepliesAsync(string fullname, bool state, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname,
-                ["state"] = state.ToString().ToLower()
-            };
-
-            return await this.PostFormAsync("/api/sendreplies", formData, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -276,87 +83,6 @@ namespace Reddit.Api.Client
             }
 
             return await this.PostFormAsync("/api/set_subreddit_sticky", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<SubmitResponseData?> SubmitAsync(SubmitRequest request, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["api_type"] = "json",
-                ["sr"] = request.Subreddit,
-                ["title"] = request.Title,
-                ["kind"] = request.Kind.ToJsonString(),
-                ["sendreplies"] = request.SendReplies.ToString().ToLower()
-            };
-
-            if (!string.IsNullOrEmpty(request.Text))
-            {
-                formData["text"] = request.Text;
-            }
-
-            if (!string.IsNullOrEmpty(request.Url))
-            {
-                formData["url"] = request.Url;
-            }
-
-            if (!request.Nsfw.IsNull)
-            {
-                formData["nsfw"] = request.Nsfw.ToString();
-            }
-
-            if (!request.Spoiler.IsNull)
-            {
-                formData["spoiler"] = request.Spoiler.ToString();
-            }
-
-            if (!request.Resubmit.IsNull)
-            {
-                formData["resubmit"] = request.Resubmit.ToString();
-            }
-
-            if (!string.IsNullOrEmpty(request.FlairId))
-            {
-                formData["flair_id"] = request.FlairId;
-            }
-
-            if (!string.IsNullOrEmpty(request.FlairText))
-            {
-                formData["flair_text"] = request.FlairText;
-            }
-
-            ApiResponse<SubmitResponseData>? response = await this.PostFormAsync<ApiResponse<SubmitResponseData>>("/api/submit", formData, cancellationToken);
-            CheckApiResponse(response);
-
-            return response?.Json?.Data;
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> UnhideAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/unhide", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> UnlockAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/unlock", formData, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -385,40 +111,5 @@ namespace Reddit.Api.Client
             return await this.PostFormAsync("/api/unspoiler", formData, cancellationToken);
         }
 
-        /// <inheritdoc />
-        public async Task<bool> UnsaveAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/unsave", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> VoteAsync(string fullname, int direction, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname,
-                ["dir"] = direction.ToString()
-            };
-
-            return await this.PostFormAsync("/api/vote", formData, cancellationToken);
-        }
-    }
-
-    // Response envelope for endpoints that return things inside the ApiResponse wrapper
-    // (e.g. /api/comment, /api/editusertext, /api/distinguish when called with text=).
-    // Reddit returns { json: { errors, data: { things: [{kind:"t1", data:{...}}] } } }.
-    internal class CommentResponseData
-    {
-        [JsonPropertyName("things")]
-        public List<Thing<Comment>>? Things { get; set; }
     }
 }

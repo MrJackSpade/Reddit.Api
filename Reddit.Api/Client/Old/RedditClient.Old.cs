@@ -26,9 +26,11 @@ namespace Reddit.Api.Client
     ///   counts, and no reply state, because the markup doesn't carry them.
     /// - Search: /search is blocked as JSON everywhere. The HTML page gives the result IDs and the
     ///   next page's anchor; the posts themselves come from www (one request per result).
-    /// - The "new" sort: blocked as JSON on every host, for every subreddit, multi and the front
-    ///   page, while hot, top and rising still work on OAuth. Same approach as search. Beware
-    ///   ?sort=new on OAuth: it answers 200 with the hot listing.
+    /// - The "new" and "rising" sorts: blocked as JSON on the website for subreddits and the front
+    ///   page (multis still answer, see the www partial). Same approach as search, so a page costs one
+    ///   request per post. Beware ?sort=new or ?sort=rising: they answer 200 with the hot listing.
+    /// - /r/all listings: www blocks them all as JSON, and this host still answers hot and top. The
+    ///   www partial's listing router sends them here.
     ///
     /// How these move to www: its load-more (POST /svc/shreddit/more-comments/...) works with the
     /// session, but it locates comments by a tree position and a cursor that only exist in www's own
@@ -88,17 +90,6 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> GetNewPostsAsync(string path, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureWebSessionAsync("The new sort", cancellationToken);
-
-            // The trailing slash avoids a redirect to the canonical URL.
-            string endpoint = $"/{path.Trim('/')}/{parameters?.ToQueryString() ?? string.Empty}";
-
-            return await this.GetPostsFromHtmlAsync(endpoint, "//div[@id='siteTable']", " link ", cancellationToken);
-        }
-
-        /// <inheritdoc />
         public async Task<Listing<Thing<Link>>?> SearchAsync(SearchParameters parameters, CancellationToken cancellationToken = default)
         {
             return await this.SearchHtmlAsync("/search", parameters, cancellationToken);
@@ -111,6 +102,16 @@ namespace Reddit.Api.Client
             parameters.RestrictSr = true;
 
             return await this.SearchHtmlAsync($"/r/{subreddit}/search", parameters, cancellationToken);
+        }
+
+        private async Task<Listing<Thing<Link>>?> GetPostsFromListingHtmlAsync(string path, ListingParameters? parameters, CancellationToken cancellationToken)
+        {
+            await this.EnsureWebSessionAsync("This sort", cancellationToken);
+
+            // The trailing slash avoids a redirect to the canonical URL.
+            string endpoint = $"/{path.Trim('/')}/{parameters?.ToQueryString() ?? string.Empty}";
+
+            return await this.GetPostsFromHtmlAsync(endpoint, "//div[@id='siteTable']", " link ", cancellationToken);
         }
 
         private async Task<Listing<Thing<Link>>?> SearchHtmlAsync(string path, SearchParameters parameters, CancellationToken cancellationToken)

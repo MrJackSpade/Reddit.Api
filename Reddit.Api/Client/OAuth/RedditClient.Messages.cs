@@ -78,19 +78,6 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<bool> ReadMessageAsync(string fullname, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["id"] = fullname
-            };
-
-            return await this.PostFormAsync("/api/read_message", formData, cancellationToken);
-        }
-
-        /// <inheritdoc />
         public async Task<bool> UnreadMessageAsync(string fullname, CancellationToken cancellationToken = default)
         {
             await this.EnsureAuthenticatedAsync(cancellationToken);

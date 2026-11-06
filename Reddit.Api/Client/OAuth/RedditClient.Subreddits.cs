@@ -52,20 +52,6 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<Thing<Subreddit>?> GetSubredditAboutAsync(string subreddit, CancellationToken cancellationToken = default)
-        {
-            await this.TryAuthenticateAsync(cancellationToken);
-            return await this.GetAsync<Thing<Subreddit>>($"/r/{subreddit}/about", cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<SubredditRulesResponse?> GetSubredditRulesAsync(string subreddit, CancellationToken cancellationToken = default)
-        {
-            await this.TryAuthenticateAsync(cancellationToken);
-            return await this.GetAsync<SubredditRulesResponse>($"/r/{subreddit}/about/rules", cancellationToken);
-        }
-
-        /// <inheritdoc />
         public async Task<Listing<Thing<Subreddit>>?> SearchSubredditsAsync(string query, ListingParameters? parameters = null, CancellationToken cancellationToken = default)
         {
             await this.TryAuthenticateAsync(cancellationToken);
@@ -82,26 +68,5 @@ namespace Reddit.Api.Client
 
             return await this.GetAsync<Listing<Thing<Subreddit>>>($"/subreddits/search{queryString}", cancellationToken);
         }
-
-        /// <inheritdoc />
-        public async Task<bool> SubscribeAsync(string subreddit, bool subscribe, CancellationToken cancellationToken = default)
-        {
-            await this.EnsureAuthenticatedAsync(cancellationToken);
-
-            Dictionary<string, string> formData = new()
-            {
-                ["action"] = subscribe ? SubscribeAction.Subscribe.ToJsonString() : SubscribeAction.Unsubscribe.ToJsonString(),
-                ["sr_name"] = subreddit
-            };
-
-            return await this.PostFormAsync("/api/subscribe", formData, cancellationToken);
-        }
-    }
-
-    // Helper response class
-    internal class SubredditAutocompleteResponse
-    {
-        [JsonPropertyName("subreddits")]
-        public List<SubredditAutocompleteItem>? Subreddits { get; set; }
     }
 }
