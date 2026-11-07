@@ -119,6 +119,14 @@ namespace Reddit.Api.Models.Json.Listings
         [JsonConverter(typeof(HtmlDecodedStringConverter))]
         public string? Url { get; set; }
 
+        /// <summary>
+        /// The image's URL in preview images and award icons, which name it "url" (media_metadata
+        /// names it "u", above).
+        /// </summary>
+        [JsonPropertyName("url")]
+        [JsonConverter(typeof(HtmlDecodedStringConverter))]
+        public string? SourceUrl { get; set; }
+
         [JsonPropertyName("width")]
         public int Width { get; set; }
 
