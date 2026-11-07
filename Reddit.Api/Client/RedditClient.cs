@@ -54,7 +54,8 @@ namespace Reddit.Api.Client
             {
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                TypeInfoResolver = Json.RedditJson.TypeInfoResolver
             };
         }
 
