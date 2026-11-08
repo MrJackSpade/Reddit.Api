@@ -192,7 +192,7 @@ namespace Reddit.Api.Client
                 CreatedUtc = ParseTime(name, Required(node, "created", name)),
 
                 // Deleted comments are rendered without a score.
-                Score = node.Attributes.Contains("score") ? int.Parse(node.Attr("score"), CultureInfo.InvariantCulture) : 0,
+                Score = node.Attr("score") is string score ? int.Parse(score, CultureInfo.InvariantCulture) : 0,
                 ScoreHidden = row.Attributes.Contains("is-score-hidden"),
                 Likes = row.Attr("vote-state") switch
                 {
@@ -245,62 +245,15 @@ namespace Reddit.Api.Client
             };
         }
 
-        /// <summary>
-        /// The author's flair: a span whose inline style is the background, whose text class says
-        /// light or dark text, holding emoji images (alt "emoji:name:") and text.
-        /// </summary>
+        /// <summary>The author's flair, in the span inside the comment's &lt;author-flair-event-handler&gt;.</summary>
         private static (string? Text, List<FlairRichtext>? Richtext, JsonColor Background, FlairTextColor TextColor) ParseFlair(HtmlNode node, string name)
         {
-            HtmlNode? handler = Owned(node, "author-flair-event-handler").FirstOrDefault();
-            HtmlNode? span = handler?.Element("span");
+            HtmlNode? span = Owned(node, "author-flair-event-handler").FirstOrDefault()?.Element("span");
+            ShredditFlair? flair = span == null ? null : ShredditFlair.Parse(span, name);
 
-            if (span == null)
-            {
-                return (null, null, JsonColor.Null, FlairTextColor.Null);
-            }
-
-            List<FlairRichtext> parts = [];
-
-            foreach (HtmlNode part in span.Descendants())
-            {
-                if (part.Name == "img")
-                {
-                    string alt = part.GetAttributeValue("alt", string.Empty);
-
-                    if (!alt.StartsWith("emoji:", StringComparison.Ordinal))
-                    {
-                        throw Unrecognised(name, $"flair image alt '{alt}'");
-                    }
-
-                    parts.Add(new FlairRichtext { Type = "emoji", EmojiId = alt["emoji".Length..], Url = HtmlEntity.DeEntitize(part.GetAttributeValue("src", string.Empty)) });
-                }
-                else if (part.NodeType == HtmlNodeType.Text && !string.IsNullOrWhiteSpace(part.InnerText))
-                {
-                    parts.Add(new FlairRichtext { Type = "text", Text = HtmlEntity.DeEntitize(part.InnerText.Trim()) });
-                }
-            }
-
-            if (parts.Count == 0)
-            {
-                return (null, null, JsonColor.Null, FlairTextColor.Null);
-            }
-
-            // The parts in order, emoji as their codes. Reddit's own text spaces them as the user typed
-            // it, which the markup loses; the app only shows this text with the codes stripped.
-            string text = string.Concat(parts.Select(p => p.Type == "emoji" ? p.EmojiId : p.Text));
-
-            Match background = BackgroundColor().Match(span.GetAttributeValue("style", string.Empty));
-            HashSet<string> classes = Classes(span);
-
-            FlairTextColor textColor = classes.Contains("text-global-white") ? FlairTextColor.Light
-                : classes.Contains("text-secondary") ? FlairTextColor.Dark
-                : throw Unrecognised(name, $"flair text colour classes '{span.GetAttributeValue("class", string.Empty)}'");
-
-            JsonColor color = !background.Success ? JsonColor.Empty
-                : background.Groups["color"].Value == "transparent" ? JsonColor.FromString("transparent")
-                : JsonColor.FromString(background.Groups["color"].Value.ToLowerInvariant());
-
-            return (text, parts, color, textColor);
+            return flair == null
+                ? (null, null, JsonColor.Null, FlairTextColor.Null)
+                : (flair.Text, flair.Richtext, flair.Background, flair.TextColor);
         }
 
         /// <summary>The elements named <paramref name="name"/> inside <paramref name="comment"/> but not inside a reply.</summary>
@@ -346,17 +299,12 @@ namespace Reddit.Api.Client
 
         private static DateTime ParseTime(string name, string value)
         {
-            // "2026-11-06T17:12:34.212000+0000": an offset without a colon, which .NET won't parse.
-            Match time = CreatedTime().Match(value);
-
-            return time.Success && DateTimeOffset.TryParse($"{time.Groups["time"].Value}{time.Groups["sign"].Value}{time.Groups["hours"].Value}:{time.Groups["minutes"].Value}", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset parsed)
-                ? parsed.UtcDateTime
-                : throw Unrecognised(name, $"created time '{value}'");
+            return ShredditTime.Parse(value) ?? throw Unrecognised(name, $"created time '{value}'");
         }
 
         private static string Required(HtmlNode node, string attribute, string? name)
         {
-            return node.GetAttributeValue(attribute, null)
+            return node.Attr(attribute)
                 ?? throw Unrecognised(name ?? "a comment", $"no {attribute} attribute");
         }
 
@@ -370,10 +318,6 @@ namespace Reddit.Api.Client
             return new InvalidOperationException($"Unrecognised comment markup from www for {name}: {problem}.");
         }
 
-        [GeneratedRegex(@"background-color:\s*(?<color>#[0-9A-Fa-f]{3,8}|transparent)")]
-        private static partial Regex BackgroundColor();
 
-        [GeneratedRegex(@"^(?<time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?)(?<sign>[+-])(?<hours>\d{2})(?<minutes>\d{2})$")]
-        private static partial Regex CreatedTime();
     }
 }
