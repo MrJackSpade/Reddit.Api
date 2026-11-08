@@ -77,8 +77,8 @@ namespace Reddit.Api.Client
         private bool HasWebSession => IsAuthenticated && _token!.SessionCookies != null;
 
         /// <summary>
-        /// Minimum delay between requests in milliseconds.
-        /// Reddit recommends no more than 60 requests per minute.
+        /// Minimum delay between OAuth API requests in milliseconds: the API's rate limit, which
+        /// recommends no more than 60 requests per minute. Calls to the website aren't throttled.
         /// </summary>
         public int MinimumDelayMs { get; set; } = 500;
 
@@ -166,10 +166,13 @@ namespace Reddit.Api.Client
         /// <inheritdoc />
         public async Task<string?> GetTokenOwner(string accessToken, string? sessionCookies = null)
         {
-            await this.ThrottleAsync(CancellationToken.None);
-
             // A browser session is checked on the website, which is where its calls go. OAuth is
             // only for tokens that have nothing else.
+            if (sessionCookies == null)
+            {
+                await this.ThrottleAsync(CancellationToken.None);
+            }
+
             using HttpRequestMessage request = new(HttpMethod.Get, sessionCookies != null ? $"{WwwBaseUrl}/api/me.json" : $"{OAuthBaseUrl}/api/v1/me");
 
             if (sessionCookies != null)
@@ -503,7 +506,7 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
-        /// Enforces rate limiting between requests.
+        /// Spaces OAuth API requests <see cref="MinimumDelayMs"/> apart (the API's rate limit).
         /// </summary>
         protected async Task ThrottleAsync(CancellationToken cancellationToken)
         {
@@ -581,8 +584,6 @@ namespace Reddit.Api.Client
         /// <param name="accept">The Accept header, when the response type needs asking for.</param>
         private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken, bool jsonSuffix = true, string? accept = null)
         {
-            await this.ThrottleAsync(cancellationToken);
-
             (HttpResponseMessage response, string url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, accept, cancellationToken);
 
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
@@ -630,6 +631,7 @@ namespace Reddit.Api.Client
             }
             else if (session != null)
             {
+                await this.ThrottleAsync(cancellationToken);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
             }
 

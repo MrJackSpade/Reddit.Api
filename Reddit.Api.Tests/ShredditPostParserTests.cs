@@ -80,7 +80,7 @@ namespace Reddit.Api.Tests
         }
 
         [TestMethod]
-        public void Parse_ReadsACrosspostsOriginalMedia()
+        public void Parse_ReadsACrosspostsOriginal()
         {
             Link post = Parse("shreddit-post-crosspost.html");
 
@@ -90,6 +90,29 @@ namespace Reddit.Api.Tests
             Assert.AreEqual("https://i.redd.it/qac8x4psh90i1.jpeg", original.Url);
             Assert.AreEqual("/r/mildlyinteresting/comments/1xqhy6e/a_hot_air_balloon_landed_in_my_neighborhood/", original.Permalink);
             Assert.AreEqual(original.Thumbnail, post.Thumbnail);
+
+            // The card's credit bar and footer.
+            Assert.AreEqual("t3_1xqhy6e", original.Name);
+            Assert.AreEqual("1xqhy6e", original.Id);
+            Assert.AreEqual("A Hot Air Balloon Landed in my Neighborhood", original.Title);
+            Assert.AreEqual("mildlyinteresting", original.Subreddit);
+            Assert.AreEqual("r/mildlyinteresting", original.SubredditNamePrefixed);
+            Assert.AreEqual(new DateTime(2026, 11, 7, 21, 52, 37, 602, DateTimeKind.Utc), original.CreatedUtc.Value);
+            Assert.AreEqual(8509, original.Score);
+            Assert.AreEqual(213, original.NumComments);
+        }
+
+        [TestMethod]
+        public void Parse_ReadsAnUncommentedCrosspostOriginal()
+        {
+            // From r/Music/new (2026-11-08): the original has 1 upvote ("1 upvote") and no comments,
+            // so www leaves its comments link out.
+            Link original = Parse("shreddit-feed-crosspost-uncommented.html").CrosspostParentList!.Single();
+
+            Assert.AreEqual("t3_1xr83xu", original.Name);
+            Assert.AreEqual("WeGotItCovered", original.Subreddit);
+            Assert.AreEqual(1, original.Score);
+            Assert.AreEqual(0, original.NumComments);
         }
 
         [TestMethod]
@@ -101,7 +124,8 @@ namespace Reddit.Api.Tests
             Assert.IsTrue(post.Stickied);
             Assert.IsFalse(post.Saved);
             Assert.IsTrue(post.SelftextHtml!.Contains("<p>", StringComparison.Ordinal));
-            Assert.IsTrue(post.Selftext!.Length > 0);
+            // www doesn't send the markdown; the app rebuilds it from the HTML.
+            Assert.IsNull(post.Selftext);
             Assert.AreEqual(FlairTextColor.Dark, post.LinkFlairTextColor);
 
             Assert.AreEqual(DistinguishedKind.Moderator, post.Distinguished);

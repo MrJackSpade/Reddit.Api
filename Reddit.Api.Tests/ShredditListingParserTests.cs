@@ -46,6 +46,13 @@ namespace Reddit.Api.Tests
             Assert.AreEqual("Showcase", post.LinkFlairText);
             Assert.IsTrue(post.Thumbnail!.StartsWith("https://preview.redd.it/", StringComparison.Ordinal));
             Assert.AreEqual(DistinguishedKind.Null, post.Distinguished);
+
+            // A gallery: the images' srcset sizes, as Reddit's JSON gives its preview resolutions
+            // and each item's previews.
+            PreviewImage preview = post.Preview!.Images!.Single();
+            Assert.IsTrue(preview.Resolutions!.Count > 0);
+            Assert.IsTrue(preview.Resolutions!.All(r => r.SourceUrl!.StartsWith("https://preview.redd.it/", StringComparison.Ordinal) && r.Width > 0 && r.Height > 0));
+            Assert.IsTrue(post.MediaMetadata!.Values.All(m => m.Previews!.Count > 0 && m.Previews.All(p => p.Url!.StartsWith("https://preview.redd.it/", StringComparison.Ordinal) && p.X > 0 && p.Y > 0)));
         }
 
         [TestMethod]

@@ -20,10 +20,15 @@ namespace Reddit.Api.Client
     /// - Its &lt;shreddit-post-overflow-menu&gt;: saved, stickied, reply notifications, and
     ///   distinguished (distinguished-as, also on its &lt;shreddit-distinguished-post-tags&gt;).
     /// - Its &lt;shreddit-post-flair&gt;: the link flair, rendered like comment flair.
-    /// - Its &lt;shreddit-post-text-body&gt;: the body, as www renders it (no markdown).
-    /// - Media, read by <see cref="ReadMedia"/>: images, gallery items, and Reddit videos.
+    /// - Its &lt;shreddit-post-text-body&gt;: the body, as www renders it. www doesn't send the
+    ///   markdown, so selftext is null when there is a body: the app rebuilds it from the HTML, as
+    ///   it does for comments.
+    /// - Media, read by <see cref="ReadMedia"/>: images, gallery items, and Reddit videos. Images'
+    ///   srcset sizes are the preview's resolutions, and each gallery item's previews.
+    /// - A crosspost's card for the original (<see cref="ReadCrosspostOriginal"/>): its subreddit,
+    ///   time, title, link, score, comment count and media.
     ///
-    /// Not in the markup: the body's markdown, and a crosspost original's author and score (its media, title and link are there).
+    /// Not in the markup: the body's markdown, a crosspost original's author, and an embed's thumbnail.
     /// A Reddit video has no signed DASH URL here; the unsigned one
     /// (v.redd.it/{id}/DASHPlaylist.mpd) answers.
     /// </summary>
@@ -97,19 +102,12 @@ namespace Reddit.Api.Client
                 LinkFlairTextColor = linkFlair?.TextColor ?? FlairTextColor.Null,
 
                 SelftextHtml = body == null ? null : BodyHtml(body, name),
-                Selftext = body == null ? string.Empty : Text(body, name)
+                Selftext = body == null ? string.Empty : null
             };
 
             if (postType == "crosspost")
             {
-                // The original is rendered inside the crosspost: its media, and its permalink as the content link.
-                Link original = new()
-                {
-                    Permalink = new Uri(link.Url!).AbsolutePath,
-                    Url = link.Url,
-                    Title = link.Title
-                };
-
+                Link original = ReadCrosspostOriginal(post, link);
                 ReadMedia(post, original);
                 link.CrosspostParentList = [original];
 
@@ -123,6 +121,57 @@ namespace Reddit.Api.Client
             }
 
             return link;
+        }
+
+        /// <summary>
+        /// A crosspost's original, from the card www renders for it inside the crosspost: a credit
+        /// bar (.crosspost-credit-bar: its subreddit and time), its title, its media, and a footer
+        /// with its score ("{n} upvotes", "1 upvote") and its comment count (a link to it,
+        /// "{n} comments"), which www leaves out when there are none. The crosspost's content link
+        /// is the original's permalink. Its author isn't in the card.
+        /// </summary>
+        private static Link ReadCrosspostOriginal(HtmlNode post, Link crosspost)
+        {
+            string name = crosspost.Name!;
+            string permalink = new Uri(crosspost.Url!).AbsolutePath;
+            Match thread = PermalinkPost().Match(permalink);
+
+            if (!thread.Success)
+            {
+                throw Unrecognised(name, $"a crosspost whose content link isn't a post: {crosspost.Url}");
+            }
+
+            HtmlNode credit = post.Descendants("div").SingleOrDefault(div => div.GetClasses().Contains("crosspost-credit-bar"))
+                ?? throw Unrecognised(name, "a crosspost without the original's credit bar");
+            HtmlNode subreddit = credit.Descendants("a").SingleOrDefault(a => (a.Attr("href") ?? string.Empty).StartsWith("/r/", StringComparison.Ordinal))
+                ?? throw Unrecognised(name, "a crosspost credit bar without the original's subreddit");
+            HtmlNode created = credit.Descendants("faceplate-timeago").SingleOrDefault()
+                ?? throw Unrecognised(name, "a crosspost credit bar without the original's time");
+
+            HtmlNode score = post.Descendants("faceplate-number").SingleOrDefault(n => n.NextSibling?.NodeType == HtmlNodeType.Text && n.NextSibling.InnerText.Trim() is "upvotes" or "upvote")
+                ?? throw Unrecognised(name, "a crosspost without the original's score");
+            HtmlNode? comments = post.Descendants("faceplate-number").SingleOrDefault(n => n.ParentNode.Name == "a" && n.ParentNode.Attr("href") == permalink);
+
+            string subredditName = HtmlEntity.DeEntitize(subreddit.InnerText).Trim();
+
+            if (!subredditName.StartsWith("r/", StringComparison.Ordinal))
+            {
+                throw Unrecognised(name, $"a crosspost original's subreddit '{subredditName}'");
+            }
+
+            return new Link
+            {
+                Id = thread.Groups["id"].Value,
+                Name = $"t3_{thread.Groups["id"].Value}",
+                Permalink = permalink,
+                Url = crosspost.Url,
+                Title = crosspost.Title,
+                Subreddit = subredditName[2..],
+                SubredditNamePrefixed = subredditName,
+                CreatedUtc = ShredditTime.Parse(Required(created, "ts", name)) ?? throw Unrecognised(name, "a crosspost original's time that isn't one"),
+                Score = int.Parse(Required(score, "number", name), CultureInfo.InvariantCulture),
+                NumComments = comments == null ? 0 : int.Parse(Required(comments, "number", name), CultureInfo.InvariantCulture)
+            };
         }
 
         /// <summary>
@@ -208,7 +257,8 @@ namespace Reddit.Api.Client
                         Status = "valid",
                         Type = "Image",
                         Mimetype = $"image/{file.Groups["ext"].Value}",
-                        Source = new ImageSource { Url = url, X = width, Y = height }
+                        Source = new ImageSource { Url = url, X = width, Y = height },
+                        Previews = Sizes(sized, width, height, link.Name!).Select(size => new ImageSource { Url = size.Url, X = size.Width, Y = size.Height }).ToList()
                     };
                 }
 
@@ -218,8 +268,11 @@ namespace Reddit.Api.Client
                 }
 
                 HtmlNode first = gallery.Descendants("img").First(img => img.Attr("src") != null && img.Attr("width") != null);
-                link.Preview = PreviewOf(HtmlEntity.DeEntitize(first.Attr("src")!), int.Parse(first.Attr("width")!, CultureInfo.InvariantCulture), int.Parse(first.Attr("height")!, CultureInfo.InvariantCulture));
-                link.Thumbnail = link.Preview.Images![0].Source!.SourceUrl;
+                int firstWidth = int.Parse(first.Attr("width")!, CultureInfo.InvariantCulture);
+                int firstHeight = int.Parse(first.Attr("height")!, CultureInfo.InvariantCulture);
+                link.Preview = PreviewOf(HtmlEntity.DeEntitize(first.Attr("src")!), firstWidth, firstHeight);
+                link.Preview.Images![0].Resolutions = Resolutions(first, firstWidth, firstHeight, link.Name!);
+                link.Thumbnail = link.Preview.Images[0].Source!.SourceUrl;
                 return;
             }
 
@@ -231,7 +284,8 @@ namespace Reddit.Api.Client
                 int height = primary.Attr("height") is string h ? int.Parse(h, CultureInfo.InvariantCulture) : 0;
 
                 link.Preview = PreviewOf(HtmlEntity.DeEntitize(primary.Attr("src") ?? throw Unrecognised(link.Name, "a primary image without a src")), width, height);
-                link.Thumbnail = link.Preview.Images![0].Source!.SourceUrl;
+                link.Preview.Images![0].Resolutions = Resolutions(primary, width, height, link.Name!);
+                link.Thumbnail = link.Preview.Images[0].Source!.SourceUrl;
 
                 // The original, which an image post links to.
                 HtmlNode? original = post.Descendants("img").FirstOrDefault(img => (img.Attr("src") ?? string.Empty).StartsWith("https://i.redd.it/", StringComparison.Ordinal));
@@ -301,6 +355,43 @@ namespace Reddit.Api.Client
             return (largest.GetProperty("width").GetInt32(), largest.GetProperty("height").GetInt32(), duration);
         }
 
+        /// <summary>
+        /// The sizes in an image's srcset ("{url} {width}w, ...", data-lazy-srcset on images www
+        /// loads later), each one's height scaled from the image's. Empty when it has no srcset.
+        /// </summary>
+        private static List<(string Url, int Width, int Height)> Sizes(HtmlNode image, int width, int height, string name)
+        {
+            if ((image.Attr("srcset") ?? image.Attr("data-lazy-srcset")) is not string srcset)
+            {
+                return [];
+            }
+
+            List<(string Url, int Width, int Height)> sizes = [];
+
+            foreach (string candidate in HtmlEntity.DeEntitize(srcset).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                Match size = SrcsetCandidate().Match(candidate);
+
+                if (!size.Success)
+                {
+                    throw Unrecognised(name, $"an image srcset entry '{candidate}'");
+                }
+
+                int candidateWidth = int.Parse(size.Groups["width"].Value, CultureInfo.InvariantCulture);
+                int candidateHeight = width == 0 ? 0 : (int)Math.Round((double)height * candidateWidth / width);
+
+                sizes.Add((size.Groups["url"].Value, candidateWidth, candidateHeight));
+            }
+
+            return sizes;
+        }
+
+        /// <summary>An image's srcset sizes as a preview's resolutions.</summary>
+        private static List<ImageSource> Resolutions(HtmlNode image, int width, int height, string name)
+        {
+            return Sizes(image, width, height, name).Select(size => new ImageSource { SourceUrl = size.Url, Width = size.Width, Height = size.Height }).ToList();
+        }
+
         private static Preview PreviewOf(string url, int width, int height)
         {
             return new Preview
@@ -317,14 +408,6 @@ namespace Reddit.Api.Client
                 ?? throw Unrecognised(name, "a text body without its content");
 
             return content.InnerHtml;
-        }
-
-        /// <summary>The body's text, a line per paragraph, with HTML entities decoded.</summary>
-        private static string Text(HtmlNode body, string name)
-        {
-            HtmlNode content = body.Descendants().First(n => n.Id == $"{name}-post-rtjson-content");
-
-            return string.Join("\n", HtmlEntity.DeEntitize(content.InnerText).Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0));
         }
 
         /// <summary>The post's own element named <paramref name="tag"/>, not one in a post rendered inside it.</summary>
@@ -353,5 +436,11 @@ namespace Reddit.Api.Client
 
         [GeneratedRegex(@"^https://i\.redd\.it/(?<id>[A-Za-z0-9]+)\.(?<ext>[a-z0-9]+)$")]
         private static partial Regex RedditImageUrl();
+
+        [GeneratedRegex(@"^/r/[^/]+/comments/(?<id>[a-z0-9]+)/")]
+        private static partial Regex PermalinkPost();
+
+        [GeneratedRegex(@"^(?<url>\S+)\s+(?<width>\d+)w$")]
+        private static partial Regex SrcsetCandidate();
     }
 }
