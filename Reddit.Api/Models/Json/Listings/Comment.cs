@@ -90,6 +90,18 @@ namespace Reddit.Api.Models.Json.Listings
         [JsonPropertyName("count")]
         public int? Count { get; set; }
 
+        /// <summary>
+        /// Not Reddit JSON: for a "more" placeholder read from www's comment HTML, the partial that
+        /// loads it (POST, with <see cref="MoreCursor"/>). www locates these comments by tree position
+        /// and cursor, not by <see cref="Children"/>, which stays empty.
+        /// </summary>
+        [JsonPropertyName("more_url")]
+        public string? MoreUrl { get; set; }
+
+        /// <summary>Not Reddit JSON: the cursor www's "more" partial posts. See <see cref="MoreUrl"/>.</summary>
+        [JsonPropertyName("more_cursor")]
+        public string? MoreCursor { get; set; }
+
         [JsonPropertyName("created")]
         public JsonDateTime Created { get; set; }
 
