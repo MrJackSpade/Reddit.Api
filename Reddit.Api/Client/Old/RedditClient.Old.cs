@@ -24,18 +24,19 @@ namespace Reddit.Api.Client
     ///   It's a form POST because a big "more" lists over a thousand children, which as a query
     ///   string fails with 414. Comments loaded this way have no flair emoji, flair colours or award
     ///   counts, and no reply state, because the markup doesn't carry them.
-    /// - Search: /search is blocked as JSON everywhere. The HTML page gives the result IDs and the
-    ///   next page's anchor; the posts themselves come from www (one request per result).
-    /// - The "new" and "rising" sorts: blocked as JSON on the website for subreddits and the front
-    ///   page (multis still answer, see the www partial). Same approach as search, so a page costs one
-    ///   request per post. Beware ?sort=new or ?sort=rising: they answer 200 with the hot listing.
-    /// - /r/all listings: www blocks them all as JSON, and this host still answers hot and top. The
-    ///   www partial's listing router sends them here.
+    /// - /r/all listings: www no longer has /r/all at all (it redirects to the home feed), and this
+    ///   host still answers it. The www partial's listing router sends them here, and its "new" and
+    ///   "rising" sorts come from this HTML page (IDs and the next page's anchor; the posts themselves
+    ///   from www, one request each). Beware ?sort=new or ?sort=rising: they answer 200 with the
+    ///   hot listing.
     ///
-    /// How these move to www: its load-more (POST /svc/shreddit/more-comments/...) works with the
-    /// session, but it locates comments by a tree position and a cursor that only exist in www's own
-    /// thread HTML. So it isn't a URL swap: thread loading has to move to HTML with it. www search
-    /// also answers as HTML, but its markup hasn't been mapped.
+    /// Moved to www (2026-11-08): search and the other "new" and "rising" listings, from www's
+    /// /svc/shreddit partials. See RedditClient.Www.cs.
+    ///
+    /// How "load more" moves to www: its load-more (POST /svc/shreddit/more-comments/...) works with
+    /// the session, but it locates comments by a tree position and a cursor that only exist in www's
+    /// own thread HTML. So it isn't a URL swap: thread loading has to move to HTML with it.
+    /// ShredditCommentParser reads that HTML.
     ///
     /// These calls need the browser session, because OAuth doesn't serve the rendered form. Without
     /// one they throw rather than quietly asking a different host.
@@ -89,21 +90,6 @@ namespace Reddit.Api.Client
             return response.Json.Data.Things.Select(thing => RenderedThingParser.Parse(thing, linkFullname)).ToList();
         }
 
-        /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> SearchAsync(SearchParameters parameters, CancellationToken cancellationToken = default)
-        {
-            return await this.SearchHtmlAsync("/search", parameters, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<Listing<Thing<Link>>?> SearchSubredditAsync(string subreddit, SearchParameters parameters, CancellationToken cancellationToken = default)
-        {
-            // Add restrict_sr=true to limit search to the specified subreddit
-            parameters.RestrictSr = true;
-
-            return await this.SearchHtmlAsync($"/r/{subreddit}/search", parameters, cancellationToken);
-        }
-
         private async Task<Listing<Thing<Link>>?> GetPostsFromListingHtmlAsync(string path, ListingParameters? parameters, CancellationToken cancellationToken)
         {
             await this.EnsureWebSessionAsync("This sort", cancellationToken);
@@ -112,17 +98,6 @@ namespace Reddit.Api.Client
             string endpoint = $"/{path.Trim('/')}/{parameters?.ToQueryString() ?? string.Empty}";
 
             return await this.GetPostsFromHtmlAsync(endpoint, "//div[@id='siteTable']", " link ", cancellationToken);
-        }
-
-        private async Task<Listing<Thing<Link>>?> SearchHtmlAsync(string path, SearchParameters parameters, CancellationToken cancellationToken)
-        {
-            await this.EnsureWebSessionAsync("Search", cancellationToken);
-
-            // type=link: the HTML page otherwise leads with subreddit results.
-            string query = parameters.ToQueryString();
-            string endpoint = $"{path}{query}{(query.Length == 0 ? "?" : "&")}type=link";
-
-            return await this.GetPostsFromHtmlAsync(endpoint, "//div[contains(@class,'search-result-listing') or contains(@class,'searchpane')]", " search-result-link ", cancellationToken);
         }
 
         /// <summary>

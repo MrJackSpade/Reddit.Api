@@ -21,6 +21,9 @@ namespace Reddit.Api.Client
 
         private const string OldBaseUrl = "https://old.reddit.com";
 
+        /// <summary>What www's own pages ask for when they load a /svc/shreddit partial.</summary>
+        private const string PartialHtml = "text/vnd.reddit.partial+html, text/html;q=0.9";
+
         private const string TokenUrl = "https://www.reddit.com/api/v1/access_token";
 
         private readonly RedditCredentials _credentials;
@@ -427,6 +430,15 @@ namespace Reddit.Api.Client
         }
 
         /// <summary>
+        /// Gets one of www's /svc/shreddit partials. Asked for as a partial, www sends just the
+        /// fragment; otherwise it wraps it in a whole page shell, many times the size.
+        /// </summary>
+        protected async Task<string> GetPartialAsync(string endpoint, CancellationToken cancellationToken)
+        {
+            return await this.SendAsync(HttpMethod.Get, endpoint, RequestRoute.Www, null, cancellationToken, jsonSuffix: false, accept: PartialHtml);
+        }
+
+        /// <summary>
         /// Makes a PATCH request with JSON body to the Reddit API.
         /// </summary>
         protected async Task<T?> PatchJsonAsync<T>(string endpoint, object body, CancellationToken cancellationToken)
@@ -557,17 +569,18 @@ namespace Reddit.Api.Client
         /// once and the request rebuilt from scratch, so the retry is routed and authorized for
         /// the new session rather than replaying the one that was rejected.
         /// </summary>
-        private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken, bool jsonSuffix = true)
+        /// <param name="accept">The Accept header, when the response type needs asking for.</param>
+        private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken, bool jsonSuffix = true, string? accept = null)
         {
             await this.ThrottleAsync(cancellationToken);
 
-            (HttpResponseMessage response, string url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, cancellationToken);
+            (HttpResponseMessage response, string url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, accept, cancellationToken);
 
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
                 && await this.RefreshSessionAsync())
             {
                 response.Dispose();
-                (response, url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, cancellationToken);
+                (response, url) = await this.SendOnceAsync(method, endpoint, route, createContent, jsonSuffix, accept, cancellationToken);
             }
 
             using (response)
@@ -579,7 +592,7 @@ namespace Reddit.Api.Client
         /// <summary>
         /// Builds, authorizes and sends a single request for the current session.
         /// </summary>
-        private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, bool jsonSuffix, CancellationToken cancellationToken)
+        private async Task<(HttpResponseMessage Response, string Url)> SendOnceAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, bool jsonSuffix, string? accept, CancellationToken cancellationToken)
         {
             BearerToken? session = IsAuthenticated ? _token : null;
             bool useWebSession = route != RequestRoute.OAuth && session?.SessionCookies != null;
@@ -590,6 +603,11 @@ namespace Reddit.Api.Client
 
             using HttpRequestMessage request = new(method, url);
             request.Content = createContent?.Invoke();
+
+            if (accept != null)
+            {
+                request.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
             if (useWebSession)
             {

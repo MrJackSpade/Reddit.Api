@@ -3,6 +3,7 @@ using Reddit.Api.Models.Json.Common;
 using Reddit.Api.Models.Json.Listings;
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Reddit.Api.Client
 {
@@ -24,13 +25,19 @@ namespace Reddit.Api.Client
     /// - Blocks are per path. Listing rules live in <see cref="RouteListing"/>:
     ///   /hot.json is blocked but the same listing with no sort is the hot listing, and /r/all/*
     ///   only answers on old.reddit.com. "new" and "rising" are blocked as JSON except on multis, so
-    ///   <see cref="GetSortedPostsAsync"/> sends them through the Old partial's HTML path.
+    ///   <see cref="GetSortedPostsAsync"/> reads which posts they hold from the /svc/shreddit feed
+    ///   partials www's own pages page through (24 posts a page; the home feed's first page is 3),
+    ///   and fetches the posts as JSON. Checked against old.reddit.com: the same posts in the same
+    ///   order, except the front page's "rising", where www shows its own selection.
+    /// - Search reads the matching IDs from www's search partial the same way (see the Reads partial).
+    /// - The partials are asked for as partials (<see cref="GetPartialAsync"/>); otherwise www wraps
+    ///   them in a page shell many times the size.
     ///
     /// Posts by ID: /api/info and /by_id were blocked on 2026-11-06, so a post is fetched through its
     /// thread, one request per post. Comments can't be fetched by ID alone any more: every thread URL
     /// needs the post ID (/comments/{post}/_/{comment}.json), and nothing else returns a lone comment.
     ///
-    /// Next to move here: "load more" and search, which are on old.reddit.com. See that partial.
+    /// Next to move here: "load more", which is on old.reddit.com. See that partial.
     /// </summary>
     public partial class RedditClient
     {
@@ -55,7 +62,40 @@ namespace Reddit.Api.Client
                 return await this.GetAsync<Listing<Thing<Link>>>($"{fullPath}{parameters?.ToQueryString() ?? string.Empty}", cancellationToken, RequestRoute.Www);
             }
 
-            return await this.GetPostsFromListingHtmlAsync(fullPath, parameters, cancellationToken);
+            if (IsAll(fullPath))
+            {
+                return await this.GetPostsFromListingHtmlAsync(fullPath, parameters, cancellationToken);
+            }
+
+            await this.EnsureWebSessionAsync("This sort", cancellationToken);
+
+            string html = await this.GetPartialAsync(FeedPartial(fullPath, parameters?.After), cancellationToken);
+            (List<string> names, string? after) = ShredditListingParser.ParseFeed(html);
+
+            Listing<Thing<Link>>? posts = await this.GetByIdAsync(names, cancellationToken);
+            posts!.Data!.After = after;
+            return posts;
+        }
+
+        /// <summary>
+        /// The www partial that serves a "new" or "rising" listing, the way www's own pages page
+        /// through it: the subreddit feed, or the home feed for the front page.
+        /// </summary>
+        private static string FeedPartial(string path, string? after)
+        {
+            Match match = Regex.Match(path, "^/(?:r/(?<subreddit>[^/]+)/)?(?<sort>new|rising)$");
+
+            if (!match.Success)
+            {
+                throw new InvalidOperationException($"www has no feed partial for {path}.");
+            }
+
+            string sort = match.Groups["sort"].Value;
+            string afterParameter = after == null ? string.Empty : $"&after={Uri.EscapeDataString(ShredditListingParser.EncodeAfter(after))}";
+
+            return match.Groups["subreddit"].Success
+                ? $"/svc/shreddit/community-more-posts/{sort}/?name={Uri.EscapeDataString(match.Groups["subreddit"].Value)}{afterParameter}"
+                : $"/svc/shreddit/feeds/home-feed?sort={sort.ToUpperInvariant()}{afterParameter}";
         }
 
         /// <inheritdoc />
@@ -156,10 +196,16 @@ namespace Reddit.Api.Client
                 path = path.Length == 0 ? "/" : path;
             }
 
-            // The app's own name for it is "All": subreddit names aren't case-sensitive, and neither is the block.
-            bool isAll = path.Equals("/r/all", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/r/all/", StringComparison.OrdinalIgnoreCase);
+            return (path, IsAll(path) ? RequestRoute.Old : RequestRoute.Www);
+        }
 
-            return (path, isAll ? RequestRoute.Old : RequestRoute.Www);
+        /// <summary>
+        /// /r/all, which only old.reddit.com still serves: www redirects it to the home feed. The
+        /// app's own name for it is "All": subreddit names aren't case-sensitive, and neither is this.
+        /// </summary>
+        private static bool IsAll(string path)
+        {
+            return path.Equals("/r/all", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/r/all/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsMulti(string path)

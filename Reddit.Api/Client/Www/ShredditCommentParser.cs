@@ -163,7 +163,7 @@ namespace Reddit.Api.Client
                 throw Unrecognised(name, "no body, and not deleted");
             }
 
-            string permalink = node.GetAttributeValue("permalink", null)
+            string permalink = node.Attr("permalink")
                 ?? (commentDeleted ? $"/r/{subreddit}/comments/{linkFullname[3..]}/comment/{id}/" : throw Unrecognised(name, "no permalink"));
 
             (string? flairText, List<FlairRichtext>? flairRichtext, JsonColor flairBackground, FlairTextColor flairTextColor) = ParseFlair(node, name);
@@ -172,16 +172,16 @@ namespace Reddit.Api.Client
             {
                 Id = id,
                 Name = name,
-                ParentId = node.GetAttributeValue("parentid", null) ?? linkFullname,
-                LinkId = node.GetAttributeValue("postid", null) ?? linkFullname,
+                ParentId = node.Attr("parentid") ?? linkFullname,
+                LinkId = node.Attr("postid") ?? linkFullname,
                 Depth = int.Parse(Required(node, "depth", name), CultureInfo.InvariantCulture),
                 Permalink = permalink,
                 Subreddit = subreddit,
-                SubredditId = menu?.GetAttributeValue("subreddit-id", null),
+                SubredditId = menu?.Attr("subreddit-id"),
                 SubredditNamePrefixed = $"r/{subreddit}",
 
                 Author = HtmlEntity.DeEntitize(Required(node, "author", name)),
-                AuthorFullname = menu?.GetAttributeValue("author-id", null),
+                AuthorFullname = menu?.Attr("author-id"),
                 AuthorFlairText = flairText,
                 AuthorFlairRichtext = flairRichtext,
                 AuthorFlairBackgroundColor = flairBackground,
@@ -192,9 +192,9 @@ namespace Reddit.Api.Client
                 CreatedUtc = ParseTime(name, Required(node, "created", name)),
 
                 // Deleted comments are rendered without a score.
-                Score = node.Attributes.Contains("score") ? int.Parse(node.GetAttributeValue("score", null), CultureInfo.InvariantCulture) : 0,
+                Score = node.Attributes.Contains("score") ? int.Parse(node.Attr("score"), CultureInfo.InvariantCulture) : 0,
                 ScoreHidden = row.Attributes.Contains("is-score-hidden"),
-                Likes = row.GetAttributeValue("vote-state", null) switch
+                Likes = row.Attr("vote-state") switch
                 {
                     "UP" => VoteState.Upvote,
                     "DOWN" => VoteState.Downvote,
@@ -205,7 +205,7 @@ namespace Reddit.Api.Client
 
                 Saved = menu?.Attributes.Contains("is-saved") == true,
                 SendReplies = menu?.Attributes.Contains("is-send-replies") == true,
-                Distinguished = badges.GetAttributeValue("distinguished-as", null) switch
+                Distinguished = badges.Attr("distinguished-as") switch
                 {
                     null => DistinguishedKind.Null,
                     "MODERATOR" => DistinguishedKind.Moderator,
@@ -223,7 +223,7 @@ namespace Reddit.Api.Client
         {
             string url = HtmlEntity.DeEntitize(partial.GetAttributeValue("src", string.Empty));
 
-            string cursor = partial.Descendants("input").FirstOrDefault(i => i.GetAttributeValue("name", null) == "cursor")?.GetAttributeValue("value", null)
+            string cursor = partial.Descendants("input").FirstOrDefault(i => i.Attr("name") == "cursor")?.Attr("value")
                 ?? throw Unrecognised(parent?.Name ?? linkFullname, $"load-more partial {url} has no cursor");
 
             // The count of replies it loads; the thread's next top-level page doesn't say.
@@ -239,7 +239,7 @@ namespace Reddit.Api.Client
                 LinkId = linkFullname,
                 Depth = parent == null ? 0 : parent.Depth + 1,
                 Children = [],
-                Count = number == null ? 0 : int.Parse(number.GetAttributeValue("number", null) ?? throw Unrecognised(id, "a reply count without a number"), CultureInfo.InvariantCulture),
+                Count = number == null ? 0 : int.Parse(number.Attr("number") ?? throw Unrecognised(id, "a reply count without a number"), CultureInfo.InvariantCulture),
                 MoreUrl = url,
                 MoreCursor = HtmlEntity.DeEntitize(cursor)
             };
