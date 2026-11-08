@@ -28,7 +28,8 @@ namespace Reddit.Api.Client
     /// - A crosspost's card for the original (<see cref="ReadCrosspostOriginal"/>): its subreddit,
     ///   time, title, link, score, comment count and media.
     ///
-    /// Not in the markup: the body's markdown, a crosspost original's author, and an embed's thumbnail.
+    /// Not in the markup: the body's markdown, a crosspost original's author, and an embed's
+    /// thumbnail (built for YouTube videos).
     /// A Reddit video has no signed DASH URL here; the unsigned one
     /// (v.redd.it/{id}/DASHPlaylist.mpd) answers.
     /// </summary>
@@ -183,7 +184,7 @@ namespace Reddit.Api.Client
         /// - Otherwise the post's primary image (data-post-media-primary) is its preview, and the
         ///   original (i.redd.it) the post links to.
         /// - A &lt;shreddit-embed&gt; (YouTube and the like) is the embed's HTML and provider. Its
-        ///   thumbnail isn't in the markup.
+        ///   thumbnail isn't in the markup; a YouTube video's is built from its id.
         /// - A text post's first image, or a link post's thumbnail image, is its thumbnail.
         /// </summary>
         private static void ReadMedia(HtmlNode post, Link link)
@@ -308,6 +309,18 @@ namespace Reddit.Api.Client
                     Html = HtmlEntity.DeEntitize(embed.Attr("html") ?? throw Unrecognised(link.Name, "an embed without html")),
                     ProviderName = embed.Attr("providername")
                 };
+
+                // Not in the markup, but Reddit's thumbnail for a YouTube video is YouTube's own
+                // (as its JSON gives it: hqdefault, 480x360), and the embed names the video.
+                Match youTube = YouTubeEmbed().Match(oembed.Html);
+
+                if (youTube.Success)
+                {
+                    oembed.ThumbnailUrl = $"https://i.ytimg.com/vi/{youTube.Groups["id"].Value}/hqdefault.jpg";
+                    oembed.ThumbnailWidth = 480;
+                    oembed.ThumbnailHeight = 360;
+                    link.Thumbnail = oembed.ThumbnailUrl;
+                }
 
                 link.Media = new Media { Type = link.Domain, Oembed = oembed };
                 link.SecureMedia = link.Media;
@@ -436,6 +449,9 @@ namespace Reddit.Api.Client
 
         [GeneratedRegex(@"^https://i\.redd\.it/(?<id>[A-Za-z0-9]+)\.(?<ext>[a-z0-9]+)$")]
         private static partial Regex RedditImageUrl();
+
+        [GeneratedRegex(@"src=""https://www\.youtube\.com/embed/(?<id>[A-Za-z0-9_-]{11})[?""]")]
+        private static partial Regex YouTubeEmbed();
 
         [GeneratedRegex(@"^/r/[^/]+/comments/(?<id>[a-z0-9]+)/")]
         private static partial Regex PermalinkPost();

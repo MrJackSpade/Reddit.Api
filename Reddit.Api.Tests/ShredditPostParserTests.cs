@@ -139,6 +139,8 @@ namespace Reddit.Api.Tests
             Assert.AreEqual("https://youtu.be/-3mUZiM8rDU?is=X6P7Q-SYj8Cm40OR", post.Url);
             Assert.AreEqual("YouTube", post.Media!.Oembed!.ProviderName);
             Assert.IsTrue(post.Media.Oembed.Html!.StartsWith("<iframe", StringComparison.Ordinal));
+            Assert.AreEqual("https://i.ytimg.com/vi/-3mUZiM8rDU/hqdefault.jpg", post.Media.Oembed.ThumbnailUrl);
+            Assert.AreEqual("https://i.ytimg.com/vi/-3mUZiM8rDU/hqdefault.jpg", post.Thumbnail);
         }
     }
 }
