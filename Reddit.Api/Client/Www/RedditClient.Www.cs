@@ -25,10 +25,11 @@ namespace Reddit.Api.Client
     /// - Blocks are per path. Listing rules live in <see cref="RouteListing"/>:
     ///   /hot.json is blocked but the same listing with no sort is the hot listing, and /r/all/*
     ///   only answers on old.reddit.com. "new" and "rising" are blocked as JSON except on multis, so
-    ///   <see cref="GetSortedPostsAsync"/> reads which posts they hold from the /svc/shreddit feed
-    ///   partials www's own pages page through (24 posts a page; the home feed's first page is 3),
-    ///   and fetches the posts as JSON. Checked against old.reddit.com: the same posts in the same
-    ///   order, except the front page's "rising", where www shows its own selection.
+    ///   <see cref="GetSortedPostsAsync"/> reads them from the /svc/shreddit feed partials www's own
+    ///   pages page through (24 posts a page; the home feed's first page is 3), which render each
+    ///   post in full, so a page is one request. (Until 2026-11-08 it fetched each post as JSON, one
+    ///   request per post: slow, and those 403 too.) Checked against old.reddit.com: the same posts
+    ///   in the same order, except the front page's "rising", where www shows its own selection.
     /// - Search reads the matching IDs from www's search partial the same way (see the Reads partial).
     /// - The partials are asked for as partials (<see cref="GetPartialAsync"/>); otherwise www wraps
     ///   them in a page shell many times the size.
@@ -73,11 +74,9 @@ namespace Reddit.Api.Client
             await this.EnsureWebSessionAsync("This sort", cancellationToken);
 
             string html = await this.GetPartialAsync(FeedPartial(fullPath, parameters?.After), cancellationToken);
-            (List<string> names, string? after) = ShredditListingParser.ParseFeed(html);
+            (List<Thing<Link>> posts, string? after) = ShredditListingParser.ParseFeed(html);
 
-            Listing<Thing<Link>>? posts = await this.GetByIdAsync(names, cancellationToken);
-            posts!.Data!.After = after;
-            return posts;
+            return new Listing<Thing<Link>> { Data = new ListingData<Thing<Link>> { Children = posts, After = after } };
         }
 
         /// <summary>

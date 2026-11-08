@@ -1,32 +1,36 @@
 using HtmlAgilityPack;
+using Reddit.Api.Models.Enums;
+using Reddit.Api.Models.Json.Common;
+using Reddit.Api.Models.Json.Listings;
 using System.Text;
 using System.Web;
 
 namespace Reddit.Api.Client
 {
     /// <summary>
-    /// Reads which posts a www.reddit.com listing partial holds, in order, and where its next page
-    /// starts. The posts themselves are fetched separately (see <see cref="RedditClient.GetByIdAsync"/>).
+    /// Reads the posts a www.reddit.com listing partial holds, in order, and where its next page starts.
     ///
-    /// - Feeds (/svc/shreddit/community-more-posts/..., /svc/shreddit/feeds/...): each post is a
-    ///   &lt;shreddit-post id="t3_..."&gt;; ads are &lt;shreddit-ad-post&gt;, so they aren't read. The next
-    ///   page is the &lt;faceplate-partial slot="load-after"&gt;, whose after parameter is the last post's
-    ///   fullname in base64.
-    /// - Search (/svc/shreddit/search/...): each result is an element with
+    /// - Feeds (/svc/shreddit/community-more-posts/..., /svc/shreddit/feeds/...): each post is a full
+    ///   &lt;shreddit-post id="t3_..."&gt;, read with <see cref="ShredditPostParser"/>; ads are
+    ///   &lt;shreddit-ad-post&gt;, so they aren't read. The next page is the
+    ///   &lt;faceplate-partial slot="load-after"&gt;, whose after parameter is the last post's fullname
+    ///   in base64.
+    /// - Search (/svc/shreddit/search/...): only the post IDs. Each result is an element with
     ///   data-testid="sdui-post-unit" (ads aren't), in every sort's layout, holding a title link
-    ///   whose id is "search-post-title-t3_...". The next page is the partial whose src carries a
+    ///   whose id is "search-post-title-t3_...". The posts are fetched separately (see
+    ///   <see cref="RedditClient.GetByIdAsync"/>). The next page is the partial whose src carries a
     ///   cursor, an opaque token.
     /// </summary>
     public static class ShredditListingParser
     {
         /// <summary>The posts in a feed partial, and the fullname the next page starts after (null at the end).</summary>
-        public static (List<string> Names, string? After) ParseFeed(string html)
+        public static (List<Thing<Link>> Posts, string? After) ParseFeed(string html)
         {
             HtmlDocument document = Load(html);
 
-            List<string> names = document.DocumentNode.Descendants("shreddit-post")
-                .Select(post => post.Attr("id") ?? throw new InvalidOperationException("A post in www's feed has no id."))
-                .Distinct()
+            List<Thing<Link>> posts = document.DocumentNode.Descendants("shreddit-post")
+                .Select(post => new Thing<Link> { Kind = ThingKind.Link, Data = ShredditPostParser.Parse(post) })
+                .DistinctBy(post => post.Data!.Name)
                 .ToList();
 
             HtmlNode? next = document.DocumentNode.Descendants("faceplate-partial")
@@ -42,7 +46,7 @@ namespace Reddit.Api.Client
                 after = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
             }
 
-            return (names, after);
+            return (posts, after);
         }
 
         /// <summary>The posts in a search partial, and the cursor of the next page (null at the end).</summary>
