@@ -50,8 +50,9 @@ namespace Reddit.Api.Client
             Match background = BackgroundColor().Match(span.GetAttributeValue("style", string.Empty));
             HashSet<string> classes = [.. span.GetAttributeValue("class", string.Empty).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)];
 
+            // Dark text comes as text-secondary on most flair, text-global-black on some coloured ones.
             FlairTextColor textColor = classes.Contains("text-global-white") ? FlairTextColor.Light
-                : classes.Contains("text-secondary") ? FlairTextColor.Dark
+                : classes.Contains("text-secondary") || classes.Contains("text-global-black") ? FlairTextColor.Dark
                 : throw Unrecognised(owner, $"flair text colour classes '{span.GetAttributeValue("class", string.Empty)}'");
 
             JsonColor color = !background.Success ? JsonColor.Empty

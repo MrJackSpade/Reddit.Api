@@ -131,6 +131,19 @@ namespace Reddit.Api.Tests
         }
 
         [TestMethod]
+        public void ParseFlair_ReadsGlobalBlackTextAsDark()
+        {
+            // The class list www sent for t1_19sc792qglm75 (2026-11-08).
+            HtmlAgilityPack.HtmlDocument document = new();
+            document.LoadHtml("<span class=\"bg-tone-4 inline-block truncate max-w-full text-12 font-normal align-text-bottom box-border px-[6px] rounded-5 leading-4 text-global-black  \" style=\"background-color: #ffd635;\">Question</span>");
+
+            ShredditFlair flair = ShredditFlair.Parse(document.DocumentNode.FirstChild, "t1_x")!;
+
+            Assert.AreEqual(FlairTextColor.Dark, flair.TextColor);
+            Assert.AreEqual("Question", flair.Text);
+        }
+
+        [TestMethod]
         public void Parse_ReadsDeletedAndRemovedComments()
         {
             List<Thing<Comment>> roots = Thread();
