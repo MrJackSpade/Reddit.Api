@@ -17,13 +17,13 @@ namespace Reddit.Api.Client
     /// - &lt;shreddit-post&gt;'s attributes: id, title, author, subreddit, score, comment count, time,
     ///   permalink, domain, the content link, its type (text, image, gallery, video, link, crosspost,
     ///   multi_media), nsfw, spoiler, archived, locked, and the user's vote (vote-type).
-    /// - Its &lt;shreddit-post-overflow-menu&gt;: saved, stickied, reply notifications.
+    /// - Its &lt;shreddit-post-overflow-menu&gt;: saved, stickied, reply notifications, and
+    ///   distinguished (distinguished-as, also on its &lt;shreddit-distinguished-post-tags&gt;).
     /// - Its &lt;shreddit-post-flair&gt;: the link flair, rendered like comment flair.
     /// - Its &lt;shreddit-post-text-body&gt;: the body, as www renders it (no markdown).
     /// - Media, read by <see cref="ReadMedia"/>: images, gallery items, and Reddit videos.
     ///
-    /// Not in the markup: distinguished (the app shows the post without the mark), the body's
-    /// markdown, and a crosspost original's author and score (its media, title and link are there).
+    /// Not in the markup: the body's markdown, and a crosspost original's author and score (its media, title and link are there).
     /// A Reddit video has no signed DASH URL here; the unsigned one
     /// (v.redd.it/{id}/DASHPlaylist.mpd) answers.
     /// </summary>
@@ -83,6 +83,13 @@ namespace Reddit.Api.Client
                 Saved = menu?.Attributes.Contains("is-post-saved") == true,
                 Stickied = menu?.Attributes.Contains("is-post-stickied") == true,
                 SendReplies = menu?.Attributes.Contains("is-receiving-post-replies") == true,
+                Distinguished = menu?.Attr("distinguished-as") switch
+                {
+                    null => DistinguishedKind.Null,
+                    "MODERATOR" => DistinguishedKind.Moderator,
+                    "ADMIN" => DistinguishedKind.Admin,
+                    string other => throw Unrecognised(name, $"distinguished as '{other}'")
+                },
 
                 LinkFlairText = linkFlair?.Text,
                 LinkFlairRichtext = linkFlair?.Richtext,

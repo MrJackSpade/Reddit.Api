@@ -45,6 +45,7 @@ namespace Reddit.Api.Tests
             Assert.AreEqual(3, post.NumComments);
             Assert.AreEqual("Showcase", post.LinkFlairText);
             Assert.IsTrue(post.Thumbnail!.StartsWith("https://preview.redd.it/", StringComparison.Ordinal));
+            Assert.AreEqual(DistinguishedKind.Null, post.Distinguished);
         }
 
         [TestMethod]

@@ -104,8 +104,7 @@ namespace Reddit.Api.Tests
             Assert.IsTrue(post.Selftext!.Length > 0);
             Assert.AreEqual(FlairTextColor.Dark, post.LinkFlairTextColor);
 
-            // The page doesn't say the post is distinguished, though Reddit's JSON does.
-            Assert.AreEqual(DistinguishedKind.Null, post.Distinguished);
+            Assert.AreEqual(DistinguishedKind.Moderator, post.Distinguished);
         }
 
         [TestMethod]
