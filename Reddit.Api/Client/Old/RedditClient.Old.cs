@@ -18,7 +18,8 @@ namespace Reddit.Api.Client
     /// lacks some state: a comment's reply state isn't tracked here even in a browser.
     ///
     /// What is here and why:
-    /// - "Load more": /api/morechildren.json is blocked everywhere, and so is /api/info, which
+    /// - "Load more" (not used by the app since 2026-11-08: threads, and their "load more", come
+    ///   from www's HTML; see the www partial): /api/morechildren.json is blocked everywhere, and so is /api/info, which
     ///   supplied the comment data for a while. The suffix-less endpoint still answers, rendering
     ///   each comment as HTML, so <see cref="RenderedThingParser"/> reads comments from that markup.
     ///   It's a form POST because a big "more" lists over a thousand children, which as a query
@@ -33,10 +34,9 @@ namespace Reddit.Api.Client
     /// Moved to www (2026-11-08): search and the other "new" and "rising" listings, from www's
     /// /svc/shreddit partials. See RedditClient.Www.cs.
     ///
-    /// How "load more" moves to www: its load-more (POST /svc/shreddit/more-comments/...) works with
-    /// the session, but it locates comments by a tree position and a cursor that only exist in www's
-    /// own thread HTML. So it isn't a URL swap: thread loading has to move to HTML with it.
-    /// ShredditCommentParser reads that HTML.
+    /// How "load more" moved to www: its load-more (POST /svc/shreddit/more-comments/...) locates
+    /// comments by a tree position and a cursor that only exist in www's own thread HTML, so thread
+    /// loading moved to that HTML with it (GetThreadCommentsAsync, GetMoreCommentsAsync).
     ///
     /// These calls need the browser session, because OAuth doesn't serve the rendered form. Without
     /// one they throw rather than quietly asking a different host.

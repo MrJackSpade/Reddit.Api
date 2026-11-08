@@ -154,6 +154,7 @@ namespace Reddit.Api.Tests
             Comment lowScore = Find(Thread(), "t1_19s8l0mv6l8wx");
 
             Assert.IsTrue(lowScore.Collapsed);
+            Assert.AreEqual(CollapsedReasonCode.LowScore, lowScore.CollapsedReasonCode);
             Assert.AreEqual(-21, lowScore.Score);
             Assert.AreEqual("You don't play with your phone next to you?", lowScore.Body);
         }

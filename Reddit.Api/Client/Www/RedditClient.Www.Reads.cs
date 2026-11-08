@@ -27,6 +27,35 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
+        public Link ParseThreadPagePost(string html)
+        {
+            return ShredditThreadParser.ParsePost(html);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Thing<Comment>>> GetMoreCommentsAsync(string moreUrl, string cursor, string linkFullname, string subreddit, string parentFullname, string? translate = null, CancellationToken cancellationToken = default)
+        {
+            await this.EnsureWebSessionAsync("Loading more comments", cancellationToken);
+
+            string url = translate == null ? moreUrl : $"{moreUrl}{(moreUrl.Contains('?') ? '&' : '?')}tl={Uri.EscapeDataString(translate)}";
+            string html = await this.PostPartialAsync(url, new Dictionary<string, string> { ["cursor"] = cursor }, cancellationToken);
+
+            return ShredditCommentParser.Parse(html, linkFullname, subreddit, parentFullname);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Thing<Comment>>> GetThreadCommentsAsync(string subreddit, string linkFullname, string? commentFullname = null, string? translate = null, CancellationToken cancellationToken = default)
+        {
+            await this.EnsureWebSessionAsync("Loading comments", cancellationToken);
+
+            string focus = commentFullname == null ? string.Empty : $"/{commentFullname}";
+            string query = translate == null ? string.Empty : $"?tl={Uri.EscapeDataString(translate)}";
+            string html = await this.GetPartialAsync($"/svc/shreddit/comments/r/{Uri.EscapeDataString(subreddit)}/{linkFullname}{focus}{query}", cancellationToken);
+
+            return ShredditCommentParser.Parse(html, linkFullname, subreddit);
+        }
+
+        /// <inheritdoc />
         public async Task<Listing<Thing<Link>>?> SearchAsync(SearchParameters parameters, CancellationToken cancellationToken = default)
         {
             return await this.SearchPartialAsync("/svc/shreddit/search/", parameters, cancellationToken);

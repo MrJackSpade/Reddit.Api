@@ -569,6 +569,15 @@ namespace Reddit.Api.Client
         /// once and the request rebuilt from scratch, so the retry is routed and authorized for
         /// the new session rather than replaying the one that was rejected.
         /// </summary>
+        /// <summary>
+        /// Posts a form to one of www's /svc/shreddit partials (the way www's own pages load more
+        /// comments), asked for as a partial. See <see cref="GetPartialAsync"/>.
+        /// </summary>
+        protected async Task<string> PostPartialAsync(string endpoint, Dictionary<string, string> formData, CancellationToken cancellationToken)
+        {
+            return await this.SendAsync(HttpMethod.Post, endpoint, RequestRoute.Www, () => new FormUrlEncodedContent(formData), cancellationToken, jsonSuffix: false, accept: PartialHtml);
+        }
+
         /// <param name="accept">The Accept header, when the response type needs asking for.</param>
         private async Task<string> SendAsync(HttpMethod method, string endpoint, RequestRoute route, Func<HttpContent>? createContent, CancellationToken cancellationToken, bool jsonSuffix = true, string? accept = null)
         {

@@ -147,6 +147,28 @@ namespace Reddit.Api.Client
         Task<Thing<Link>?> GetPostAsync(string idOrFullname, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Reads the post from a www thread page's HTML, as loaded by a browser (the page itself is
+        /// behind a JavaScript challenge, so the app loads it in a WebView).
+        /// </summary>
+        Link ParseThreadPagePost(string html);
+
+        /// <summary>
+        /// POST a www "load more" partial (<see cref="Comment.MoreUrl"/>, <see cref="Comment.MoreCursor"/>):
+        /// the comments it loads, as a tree whose roots belong under <paramref name="parentFullname"/>.
+        /// </summary>
+        /// <param name="translate">The language to have www translate comments into, or null.</param>
+        Task<List<Thing<Comment>>> GetMoreCommentsAsync(string moreUrl, string cursor, string linkFullname, string subreddit, string parentFullname, string? translate = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// GET www's comments partial for a thread, or for one comment with its parents: the first
+        /// comments as a tree, with "load more" placeholders for the rest. Fetched over HTTP; unlike
+        /// the thread page, the partial isn't behind the JavaScript challenge, and it carries the
+        /// user's vote, saved and reply state, which a browser's rendered page doesn't keep in its HTML.
+        /// </summary>
+        /// <param name="translate">The language to have www translate comments into, or null.</param>
+        Task<List<Thing<Comment>>> GetThreadCommentsAsync(string subreddit, string linkFullname, string? commentFullname = null, string? translate = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// GET /comments/{article} - Get post comments.
         /// </summary>
         Task<(Thing<Link>? Post, Listing<Thing<Comment>>? Comments)> GetCommentsAsync(string articleId, string? commentId = null, string? sort = null, int? limit = null, int? depth = null, int? context = null, CancellationToken cancellationToken = default);

@@ -37,7 +37,10 @@ namespace Reddit.Api.Client
     /// thread, one request per post. Comments can't be fetched by ID alone any more: every thread URL
     /// needs the post ID (/comments/{post}/_/{comment}.json), and nothing else returns a lone comment.
     ///
-    /// Next to move here: "load more", which is on old.reddit.com. See that partial.
+    /// Threads (2026-11-08): comments, "load more" and translations come from www's comments
+    /// partials as HTML (ShredditCommentParser), which carry the user's reply state and, with tl=,
+    /// translations, which the JSON doesn't. The thread page itself is behind a JavaScript challenge;
+    /// the app loads it in a WebView when it needs a post from it (ShredditThreadParser).
     /// </summary>
     public partial class RedditClient
     {

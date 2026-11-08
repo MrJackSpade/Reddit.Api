@@ -102,6 +102,14 @@ namespace Reddit.Api.Models.Json.Listings
         [JsonPropertyName("more_cursor")]
         public string? MoreCursor { get; set; }
 
+        /// <summary>Not Reddit JSON: www can translate this comment (it's in another language).</summary>
+        [JsonPropertyName("translatable")]
+        public bool Translatable { get; set; }
+
+        /// <summary>Not Reddit JSON: www sent this comment translated (asked for with tl=).</summary>
+        [JsonPropertyName("translated")]
+        public bool Translated { get; set; }
+
         [JsonPropertyName("created")]
         public JsonDateTime Created { get; set; }
 

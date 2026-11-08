@@ -25,7 +25,7 @@ namespace Reddit.Api.Client
     /// - The element with id "{id}-comment-rtjson-content": the body.
     ///
     /// What the markup does not carry: the body's markdown (<see cref="Comment.Body"/> is the body's
-    /// text instead) and why a comment that isn't deleted was collapsed.
+    /// text instead) and why a comment that isn't deleted was collapsed (read as its score).
     ///
     /// Each element of a comment belongs to the nearest &lt;shreddit-comment&gt; around it, since replies
     /// are rendered inside their parent.
@@ -42,7 +42,11 @@ namespace Reddit.Api.Client
         /// </summary>
         /// <param name="linkFullname">The post the comments are on (t3_...).</param>
         /// <param name="subreddit">The subreddit the post is in, for comments rendered without a permalink.</param>
-        public static List<Thing<Comment>> Parse(string html, string linkFullname, string subreddit)
+        /// <param name="outerParent">
+        /// For a "load more" response, the comment (or post) the loaded comments belong under: the
+        /// parent of a further "load more" the response ends with, which isn't inside any comment.
+        /// </param>
+        public static List<Thing<Comment>> Parse(string html, string linkFullname, string subreddit, string? outerParent = null)
         {
             HtmlDocument document = new();
             document.LoadHtml(html);
@@ -78,7 +82,7 @@ namespace Reddit.Api.Client
                 {
                     HtmlNode? owner = Owner(node);
                     Comment? parent = owner == null ? null : byNode[owner];
-                    Thing<Comment> more = new() { Kind = ThingKind.More, Data = ParseMore(node, parent, linkFullname) };
+                    Thing<Comment> more = new() { Kind = ThingKind.More, Data = ParseMore(node, parent, linkFullname, outerParent) };
 
                     if (parent == null)
                     {
@@ -215,19 +219,27 @@ namespace Reddit.Api.Client
                 Locked = badges.Attributes.Contains("locked"),
                 IsSubmitter = badges.Attributes.Contains("op"),
                 Collapsed = node.Attributes.Contains("collapsed"),
-                CollapsedReasonCode = collapsedReason
+
+                // www doesn't say why a comment that isn't deleted is collapsed; it's almost always its
+                // score (Reddit's own JSON doesn't reliably say either). The app labels it so.
+                CollapsedReasonCode = collapsedReason == CollapsedReasonCode.Null && node.Attributes.Contains("collapsed") ? CollapsedReasonCode.LowScore : collapsedReason,
+
+                Translatable = node.Attributes.Contains("is-translatable"),
+                Translated = menu?.Attr("rendered-translation-state") == "translated"
             };
         }
 
-        private static Comment ParseMore(HtmlNode partial, Comment? parent, string linkFullname)
+        private static Comment ParseMore(HtmlNode partial, Comment? parent, string linkFullname, string? outerParent)
         {
             string url = HtmlEntity.DeEntitize(partial.GetAttributeValue("src", string.Empty));
 
             string cursor = partial.Descendants("input").FirstOrDefault(i => i.Attr("name") == "cursor")?.Attr("value")
                 ?? throw Unrecognised(parent?.Name ?? linkFullname, $"load-more partial {url} has no cursor");
 
-            // The count of replies it loads; the thread's next top-level page doesn't say.
+            // The count of replies it loads; the thread's next top-level page gives the count that
+            // remain in its URL instead.
             HtmlNode? number = partial.Descendants("faceplate-number").FirstOrDefault();
+            string? remaining = number == null ? System.Web.HttpUtility.ParseQueryString(url.Contains('?') ? url[(url.IndexOf('?') + 1)..] : string.Empty)["comments-remaining"] : null;
 
             string id = parent == null ? "more" : $"more_{parent.Id}";
 
@@ -235,11 +247,13 @@ namespace Reddit.Api.Client
             {
                 Id = id,
                 Name = $"t1_{id}",
-                ParentId = parent?.Name ?? linkFullname,
+                ParentId = parent?.Name ?? outerParent ?? linkFullname,
                 LinkId = linkFullname,
                 Depth = parent == null ? 0 : parent.Depth + 1,
                 Children = [],
-                Count = number == null ? 0 : int.Parse(number.Attr("number") ?? throw Unrecognised(id, "a reply count without a number"), CultureInfo.InvariantCulture),
+                Count = number != null ? int.Parse(number.Attr("number") ?? throw Unrecognised(id, "a reply count without a number"), CultureInfo.InvariantCulture)
+                    : remaining != null ? int.Parse(remaining, CultureInfo.InvariantCulture)
+                    : 0,
                 MoreUrl = url,
                 MoreCursor = HtmlEntity.DeEntitize(cursor)
             };
