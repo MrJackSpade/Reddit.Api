@@ -192,6 +192,7 @@ namespace Reddit.Api.Tests
             Assert.AreEqual("t3_1xpfn3x", next.Data!.ParentId);
             Assert.IsTrue(next.Data.MoreUrl!.Contains("top-level=1", StringComparison.Ordinal));
             Assert.IsFalse(string.IsNullOrEmpty(next.Data.MoreCursor));
+            Assert.AreEqual(1, next.Data.Count);
         }
 
         [TestMethod]
@@ -232,6 +233,18 @@ namespace Reddit.Api.Tests
             Assert.IsTrue(roots[0].Data!.ParentId.StartsWith("t1_", StringComparison.Ordinal));
             Assert.AreEqual(3, All(roots).Count(t => t.Kind == ThingKind.Comment));
             Assert.AreEqual(5, All(roots).Single(t => t.Kind == ThingKind.More).Data!.Count);
+        }
+
+        [TestMethod]
+        public void Parse_LeavesTheCountOfALaterTopLevelPageUnknown()
+        {
+            // The next top-level page at the end of a top-level "load more" response (r/AskReddit
+            // 1xr3y08): www gives no count for it, in its URL or anywhere else.
+            Comment next = Parse("shreddit-more-comments-top-level.html", "t3_1xr3y08", "AskReddit").Single().Data!;
+
+            Assert.AreEqual("t3_1xr3y08", next.ParentId);
+            Assert.IsTrue(next.MoreUrl!.Contains("rootCommentOffset=11", StringComparison.Ordinal));
+            Assert.IsNull(next.Count);
         }
 
         [TestMethod]

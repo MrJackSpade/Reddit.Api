@@ -236,12 +236,32 @@ namespace Reddit.Api.Client
             string cursor = partial.Descendants("input").FirstOrDefault(i => i.Attr("name") == "cursor")?.Attr("value")
                 ?? throw Unrecognised(parent?.Name ?? linkFullname, $"load-more partial {url} has no cursor");
 
-            // The count of replies it loads; the thread's next top-level page gives the count that
-            // remain in its URL instead.
-            HtmlNode? number = partial.Descendants("faceplate-number").FirstOrDefault();
-            string? remaining = number == null ? System.Web.HttpUtility.ParseQueryString(url.Contains('?') ? url[(url.IndexOf('?') + 1)..] : string.Empty)["comments-remaining"] : null;
-
             string id = parent == null ? "more" : $"more_{parent.Id}";
+
+            // The count of replies it loads. The thread's next top-level page gives the count that
+            // remain in its URL instead, on the thread's first page only: the next pages in a "load
+            // more" response give no count at all (www's button just says "View more comments").
+            HtmlNode? number = partial.Descendants("faceplate-number").FirstOrDefault();
+            System.Collections.Specialized.NameValueCollection query = System.Web.HttpUtility.ParseQueryString(url.Contains('?') ? url[(url.IndexOf('?') + 1)..] : string.Empty);
+
+            int? count;
+
+            if (number != null)
+            {
+                count = int.Parse(number.Attr("number") ?? throw Unrecognised(id, "a reply count without a number"), CultureInfo.InvariantCulture);
+            }
+            else if (query["comments-remaining"] is string remaining)
+            {
+                count = int.Parse(remaining, CultureInfo.InvariantCulture);
+            }
+            else if (parent == null && query["top-level"] == "1")
+            {
+                count = null;
+            }
+            else
+            {
+                throw Unrecognised(id, $"load-more partial {url} has no reply count");
+            }
 
             return new Comment
             {
@@ -251,9 +271,7 @@ namespace Reddit.Api.Client
                 LinkId = linkFullname,
                 Depth = parent == null ? 0 : parent.Depth + 1,
                 Children = [],
-                Count = number != null ? int.Parse(number.Attr("number") ?? throw Unrecognised(id, "a reply count without a number"), CultureInfo.InvariantCulture)
-                    : remaining != null ? int.Parse(remaining, CultureInfo.InvariantCulture)
-                    : 0,
+                Count = count,
                 MoreUrl = url,
                 MoreCursor = HtmlEntity.DeEntitize(cursor)
             };
