@@ -165,8 +165,10 @@ namespace Reddit.Api.Client
         /// the thread page, the partial isn't behind the JavaScript challenge, and it carries the
         /// user's vote, saved and reply state, which a browser's rendered page doesn't keep in its HTML.
         /// </summary>
+        /// <param name="commentFullname">The comment to show with its replies, or null for the whole thread.</param>
+        /// <param name="context">How many of the comment's parents to show above it.</param>
         /// <param name="translate">The language to have www translate comments into, or null.</param>
-        Task<List<Thing<Comment>>> GetThreadCommentsAsync(string subreddit, string linkFullname, string? commentFullname = null, string? translate = null, CancellationToken cancellationToken = default);
+        Task<List<Thing<Comment>>> GetThreadCommentsAsync(string subreddit, string linkFullname, string? commentFullname = null, int context = 0, string? translate = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// GET /comments/{article} - Get post comments.

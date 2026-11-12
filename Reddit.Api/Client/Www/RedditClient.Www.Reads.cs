@@ -44,12 +44,20 @@ namespace Reddit.Api.Client
         }
 
         /// <inheritdoc />
-        public async Task<List<Thing<Comment>>> GetThreadCommentsAsync(string subreddit, string linkFullname, string? commentFullname = null, string? translate = null, CancellationToken cancellationToken = default)
+        public async Task<List<Thing<Comment>>> GetThreadCommentsAsync(string subreddit, string linkFullname, string? commentFullname = null, int context = 0, string? translate = null, CancellationToken cancellationToken = default)
         {
             await this.EnsureWebSessionAsync("Loading comments", cancellationToken);
 
-            string focus = commentFullname == null ? string.Empty : $"/{commentFullname}";
-            string query = translate == null ? string.Empty : $"?tl={Uri.EscapeDataString(translate)}";
+            // Logged in, www answers a focused request with the whole thread, the comment's branch
+            // first, cut off where it was before. force-legacy-sct (which www's own "continue this
+            // thread" links carry) gets the comment with its replies instead, and context its parents.
+            bool focused = !string.IsNullOrEmpty(commentFullname);
+            string focus = focused ? $"/{commentFullname}" : string.Empty;
+            string query = new QueryStringBuilder()
+                .AddIf(focused, "force-legacy-sct", "1")
+                .Add("context", focused && context > 0 ? context : null)
+                .Add("tl", translate)
+                .Build();
             string html = await this.GetPartialAsync($"/svc/shreddit/comments/r/{Uri.EscapeDataString(subreddit)}/{linkFullname}{focus}{query}", cancellationToken);
 
             return ShredditCommentParser.Parse(html, linkFullname, subreddit);
