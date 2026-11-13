@@ -162,6 +162,21 @@ namespace Reddit.Api.Tests
         }
 
         [TestMethod]
+        public void Parse_ReadsACommentRemovedByReddit()
+        {
+            List<Thing<Comment>> roots = Parse("shreddit-comments-removed-by-reddit.html", "t3_1xv9kp7", "AmITheKaren");
+
+            Comment removed = Find(roots, "t1_19sku4hs02xyd");
+            Assert.AreEqual("Feeling-Analysis4211", removed.Author);
+            Assert.AreEqual("t2_pbdc9u8g", removed.AuthorFullname);
+            Assert.AreEqual("[ Removed by Reddit ]", removed.Body);
+            Assert.AreEqual(CollapsedReasonCode.Deleted, removed.CollapsedReasonCode);
+            Assert.AreEqual(2, removed.Score);
+            Assert.AreEqual("/r/AmITheKaren/comments/1xv9kp7/comment/19sku4hs02xyd/", removed.Permalink);
+            Assert.AreEqual("t1_19sku7ij76ixs", Replies(removed).Single().Data!.Name);
+        }
+
+        [TestMethod]
         public void Parse_MarksCollapsedComments()
         {
             Comment lowScore = Find(Thread(), "t1_19s8l0mv6l8wx");

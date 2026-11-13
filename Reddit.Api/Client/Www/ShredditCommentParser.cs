@@ -22,7 +22,8 @@ namespace Reddit.Api.Client
     ///   notifications (only rendered on the user's own comments, the only place they apply).
     /// - Its &lt;shreddit-comment-badges&gt;: distinguished, locked, and OP.
     /// - Its &lt;author-flair-event-handler&gt;: flair text, emoji, background and text colour.
-    /// - The element with id "{id}-comment-rtjson-content": the body.
+    /// - The element with id "{id}-comment-rtjson-content": the body. Taken-down comments have none:
+    ///   the deleted markers, or www's "Comment removed by Reddit" note, say which kind they are.
     ///
     /// What the markup does not carry: the body's markdown (<see cref="Comment.Body"/> is the body's
     /// text instead) and why a comment that isn't deleted was collapsed (read as its score).
@@ -144,28 +145,7 @@ namespace Reddit.Api.Client
                 throw Unrecognised(name, "no overflow menu");
             }
 
-            HtmlNode? body = Owned(node, "div").FirstOrDefault(d => d.Id == $"{name}-comment-rtjson-content");
-
-            string bodyText;
-            string bodyHtml;
-            CollapsedReasonCode collapsedReason = CollapsedReasonCode.Null;
-
-            if (body != null)
-            {
-                bodyText = Text(body);
-                bodyHtml = body.InnerHtml;
-            }
-            else if (authorDeleted)
-            {
-                // Reddit's JSON says [deleted] for a comment its author deleted, [removed] for one a moderator removed.
-                bodyText = commentDeleted ? "[deleted]" : "[removed]";
-                bodyHtml = $"<div class=\"md\"><p>{bodyText}</p>\n</div>";
-                collapsedReason = CollapsedReasonCode.Deleted;
-            }
-            else
-            {
-                throw Unrecognised(name, "no body, and not deleted");
-            }
+            (string bodyText, string bodyHtml, CollapsedReasonCode collapsedReason) = ParseBody(node, name, commentDeleted, authorDeleted);
 
             string permalink = node.Attr("permalink")
                 ?? (commentDeleted ? $"/r/{subreddit}/comments/{linkFullname[3..]}/comment/{id}/" : throw Unrecognised(name, "no permalink"));
@@ -227,6 +207,42 @@ namespace Reddit.Api.Client
                 Translatable = node.Attributes.Contains("is-translatable"),
                 Translated = menu?.Attr("rendered-translation-state") == "translated"
             };
+        }
+
+        /// <summary>
+        /// The comment's body as text and HTML, and the collapsed reason its body implies. A comment that
+        /// has been taken down has no body; it gets the text Reddit's JSON gives it instead.
+        /// </summary>
+        private static (string Text, string Html, CollapsedReasonCode CollapsedReason) ParseBody(HtmlNode node, string name, bool commentDeleted, bool authorDeleted)
+        {
+            HtmlNode? body = Owned(node, "div").FirstOrDefault(d => d.Id == $"{name}-comment-rtjson-content");
+
+            if (body != null)
+            {
+                return (Text(body), body.InnerHtml, CollapsedReasonCode.Null);
+            }
+
+            if (authorDeleted)
+            {
+                // Reddit's JSON says [deleted] for a comment its author deleted, [removed] for one a moderator removed.
+                return Placeholder(commentDeleted ? "[deleted]" : "[removed]");
+            }
+
+            // A comment Reddit itself removed keeps its author, and www shows a greyed note where the body was.
+            if (Owned(node, "p").Any(p => Classes(p).Contains("text-neutral-content-weak") && Text(p) == RemovedByRedditNote))
+            {
+                return Placeholder("[ Removed by Reddit ]");
+            }
+
+            throw Unrecognised(name, "no body, and not deleted");
+        }
+
+        private const string RemovedByRedditNote = "Comment removed by Reddit";
+
+        /// <summary>The body of a comment that has been taken down, the way Reddit's JSON renders it.</summary>
+        private static (string Text, string Html, CollapsedReasonCode CollapsedReason) Placeholder(string text)
+        {
+            return (text, $"<div class=\"md\"><p>{text}</p>\n</div>", CollapsedReasonCode.Deleted);
         }
 
         private static Comment ParseMore(HtmlNode partial, Comment? parent, string linkFullname, string? outerParent)
